@@ -1,7 +1,7 @@
-<mat-toolbar class="navbar">
-    <a href="/home"><span>
-            <img src="../assets/GT Logo.jpg" class="logo">
-            {{ title }}</span></a>
+<mat-toolbar *ngIf="checkhome()" class="navbar">
+    <a href="home"> <span>{{ title }}</span></a>
 </mat-toolbar>
 
 <router-outlet />
+
+<div class="footer">GT Gurukul © 2024</div>

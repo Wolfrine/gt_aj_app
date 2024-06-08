@@ -1,0 +1,24 @@
+<div class="news-container">
+    <h1>Our News & Events articles</h1>
+    <div class="newslist">
+        <mat-card *ngFor="let news of newsList" matRipple (click)="viewArticle(news.title,news.id)">
+            <mat-card-header>
+                <mat-card-title>{{ news.title }}</mat-card-title>
+                <mat-card-subtitle>{{ news.date.toDate() | date }}</mat-card-subtitle>
+            </mat-card-header>
+            <img mat-card-image src="../../assets/newsbg.jpg">
+            <mat-divider></mat-divider>
+            <mat-card-content>
+                <div [innerHTML]="getTruncatedContent(news.content)" class="news-content"></div>
+                <p class="readmore">Read article -></p>
+            </mat-card-content>
+        </mat-card>
+    </div>
+</div>
+
+
+
+
+<!-- <div (scroll)="onScroll()">
+    <p>Loading more...</p>
+</div> -->

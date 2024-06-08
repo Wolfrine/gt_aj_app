@@ -1,0 +1,32 @@
+<div class="container">
+    <header class="float-header" id="header">
+        <div id="spacer"></div>
+        <h1 id="institute-name">
+            {{ subdomain }}
+        </h1>
+    </header>
+    <nav class="sticky-nav" id="sticky-nav">
+        <h1>
+            {{ subdomain}}
+        </h1>
+    </nav>
+    <main id="main-content" class="main">
+        <mat-divider></mat-divider>
+
+        <div class="about">
+            <div class="about_content">
+                <h1>About us</h1>
+                <div [innerHTML]="about" class="news-content"></div>
+
+                <div>
+                    <button mat-flat-button color="primary">Enroll now</button>
+                    <button mat-stroked-button>Sign In</button>
+                </div>
+            </div>
+        </div>
+
+
+
+        <app-news-events></app-news-events>
+    </main>
+</div>

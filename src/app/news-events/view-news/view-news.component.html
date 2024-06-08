@@ -1,0 +1,8 @@
+<div class="news-article-container">
+    <div class="news-article-header">
+        <h1>{{ newsItem?.title }}</h1>
+        <p class="news-article-date">{{ newsItem?.date?.toDate() | date: 'fullDate' }}</p>
+    </div>
+    <mat-divider></mat-divider>
+    <div class="news-article-content" [innerHTML]="newsItem?.content"></div>
+</div>
