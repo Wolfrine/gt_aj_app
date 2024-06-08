@@ -80,7 +80,16 @@ export class AppComponent implements OnInit {
 
 
     applyThemeColor() {
+        const metaThemeColor = document.querySelector("meta[name=theme-color]") as HTMLMetaElement;
         document.documentElement.style.setProperty('--theme-color', this.themeColor);
+        if (metaThemeColor) {
+            metaThemeColor.setAttribute("content", this.themeColor);
+        } else {
+            const meta = document.createElement('meta');
+            meta.name = 'theme-color';
+            meta.content = this.themeColor;
+            document.getElementsByTagName('head')[0].appendChild(meta);
+        }
     }
 
     setTitle(newTitle: string) {
