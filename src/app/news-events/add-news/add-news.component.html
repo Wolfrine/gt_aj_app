@@ -1,1 +1,36 @@
-<p>add-news works!</p>
+<!-- add-news.component.html -->
+<div class="add-news-content">
+    <div class="add-news-container">
+        <form [formGroup]="newsForm" (ngSubmit)="onSubmit()">
+            <mat-card>
+                <mat-card-header>
+                    <mat-card-title>Add News or Event article</mat-card-title>
+                </mat-card-header>
+                <mat-divider></mat-divider>
+                <mat-card-content>
+                    <mat-form-field appearance="fill">
+                        <mat-label>Title</mat-label>
+                        <textarea matInput id="title" formControlName="title" type="text" required
+                            maxlength="150"></textarea>
+
+                        <mat-hint align="end">{{ remainingChars }} / {{ maxLength }}</mat-hint>
+                    </mat-form-field>
+
+                    <div class="ckeditor-container">
+                        <label for="content">Content</label>
+                        <!-- <ckeditor [editor]="Editor" formControlName="content"></ckeditor> -->
+                    </div>
+
+                    <div class="file-input-container">
+                        <label for="image">Image : </label>
+                        <input id="image" type="file" (change)="onFileSelected($event)" />
+                    </div>
+                </mat-card-content>
+                <mat-divider></mat-divider>
+                <mat-card-actions>
+                    <button mat-raised-button color="primary" type="submit">Add News</button>
+                </mat-card-actions>
+            </mat-card>
+        </form>
+    </div>
+</div>

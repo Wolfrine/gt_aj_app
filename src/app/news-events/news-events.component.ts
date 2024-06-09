@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { NewsService } from './news-events.service';
-import { CKEditorLoaderService } from './ckeditor-loader.service';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
@@ -26,19 +25,15 @@ export class NewsEventsComponent implements OnInit {
     newsList: any[] = [];
     lastVisibleDoc: any = null;
     instituteId = typeof window !== 'undefined' ? this.customizationService.getSubdomainFromUrl() : 'Test 32'; // Ensure this matches your actual institute ID
-    public Editor: any;
 
     constructor(
         private newsService: NewsService,
-        private ckeditorLoader: CKEditorLoaderService,
         private customizationService: CustomizationService,
         private router: Router
     ) { }
 
     async ngOnInit() {
         if (typeof window !== 'undefined') {
-            // Load CKEditor using the service
-            this.Editor = await this.ckeditorLoader.loadCKEditor();
             this.loadNews();
         }
     }

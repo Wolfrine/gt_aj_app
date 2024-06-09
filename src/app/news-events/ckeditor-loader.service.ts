@@ -1,3 +1,4 @@
+// ckeditor-loader.service.ts
 import { Injectable } from '@angular/core';
 
 @Injectable({

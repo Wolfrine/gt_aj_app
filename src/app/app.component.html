@@ -1,9 +1,12 @@
 <div *ngIf="subdomainChecked">
     <mat-toolbar *ngIf="checkhome()" class="navbar">
-        <a href="home"> <span>{{ title }}</span></a>
+        <a href="home"> {{ title }}</a>
+        <span (click)="openSignIn()"> Sign In </span>
     </mat-toolbar>
 
-    <router-outlet />
+    <content>
+        <router-outlet />
+    </content>
 
     <div class="footer">GT Gurukul © 2024</div>
 </div>

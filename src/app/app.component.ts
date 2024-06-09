@@ -8,7 +8,9 @@ import { Location } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { ViewportScroller } from '@angular/common';
 import { filter } from 'rxjs/operators';
-
+import { AuthComponent } from './auth/auth.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
     selector: 'app-root',
@@ -16,7 +18,8 @@ import { filter } from 'rxjs/operators';
     imports: [
         RouterOutlet,
         MatToolbarModule,
-        CommonModule
+        CommonModule,
+        AuthComponent
     ],
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.scss'],
@@ -34,11 +37,20 @@ export class AppComponent implements OnInit {
         private titleService: Title,
         private location: Location,
         private router: Router,
-        private viewportScroller: ViewportScroller) {
+        private viewportScroller: ViewportScroller,
+        private _snackBar: MatSnackBar,
+        private dialog: MatDialog
+    ) {
         console.log('AppComponent constructor');
     }
 
+    openSignIn() {
+        this.dialog.open(AuthComponent);
+    }
 
+    openSnackBar(message: string, action: string) {
+        this._snackBar.open(message, action);
+    }
 
     async ngOnInit() {
 
