@@ -7,6 +7,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDivider } from '@angular/material/divider';
+import { CustomizationService } from '../../customization.service';
+
+import { CKEditorComponent } from '../ckeditor/ckeditor.component';
 
 @Component({
     selector: 'app-add-news',
@@ -17,7 +20,8 @@ import { MatDivider } from '@angular/material/divider';
         MatInputModule,
         MatButtonModule,
         MatCardModule,
-        MatDivider
+        MatDivider,
+        CKEditorComponent
     ],
     templateUrl: './add-news.component.html',
     styleUrls: ['./add-news.component.scss']
@@ -28,7 +32,8 @@ export class AddNewsComponent implements OnInit {
 
     constructor(
         private fb: FormBuilder,
-        private newsService: NewsService
+        private newsService: NewsService,
+        private customizationService: CustomizationService
     ) {
         this.newsForm = this.fb.group({
             title: [''],
@@ -57,18 +62,25 @@ export class AddNewsComponent implements OnInit {
 
             let imageUrl = '';
 
+            console.log('CKEditor Content before submission:', contentHtml);
+
             if (newsData.image) {
                 imageUrl = await this.newsService.uploadImage(newsData.image);
             }
 
-            this.newsService.addNews('instituteId', {
-                title: newsData.title,
-                content: contentHtml,
-                imageUrl: imageUrl,
-                date: new Date()
-            }).then(() => {
+            try {
+                await this.newsService.addNews(this.customizationService.getSubdomainFromUrl(), {
+                    title: newsData.title,
+                    content: contentHtml,
+                    imageUrl: imageUrl,
+                    date: new Date()
+                });
                 this.newsForm.reset();
-            });
+            } catch (error) {
+                console.error('Error adding news:', error);
+            }
+        } else {
+            console.warn('Form is invalid');
         }
     }
 }

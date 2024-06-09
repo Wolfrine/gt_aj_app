@@ -1,7 +1,0 @@
-{
-  "routes": [
-    "/add-news",
-    "/dashboard",
-    "/home"
-  ]
-}

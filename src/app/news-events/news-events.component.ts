@@ -7,6 +7,7 @@ import { MatRippleModule } from '@angular/material/core';
 import { RouterModule, Router } from '@angular/router';
 
 import { CustomizationService } from '../customization.service';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
     selector: 'app-news-events',
@@ -25,11 +26,13 @@ export class NewsEventsComponent implements OnInit {
     newsList: any[] = [];
     lastVisibleDoc: any = null;
     instituteId = typeof window !== 'undefined' ? this.customizationService.getSubdomainFromUrl() : 'Test 32'; // Ensure this matches your actual institute ID
+    sanitizedContent: SafeHtml | undefined;
 
     constructor(
         private newsService: NewsService,
         private customizationService: CustomizationService,
-        private router: Router
+        private router: Router,
+        private sanitizer: DomSanitizer
     ) { }
 
     async ngOnInit() {
@@ -79,5 +82,11 @@ export class NewsEventsComponent implements OnInit {
     viewArticle(title: string, id: string): void {
         const encodedTitle = this.encodeTitle(title) + '-' + id;
         this.router.navigate(['/view-news', encodedTitle]);
+    }
+
+    sanitizeContent(content: string): SafeHtml {
+        // Remove font styles using a regex or DOM manipulation if needed
+        const strippedContent = content.replace(/<style[\s\S]*?<\/style>/gi, '');
+        return this.sanitizer.bypassSecurityTrustHtml(strippedContent);
     }
 }

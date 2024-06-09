@@ -1,0 +1,4 @@
+<div *ngIf="Editor">
+    <ckeditor [editor]="Editor" [(ngModel)]="editorData" (ready)="onReady($event)"></ckeditor>
+</div>
+<div *ngIf="!Editor">Loading editor...</div>

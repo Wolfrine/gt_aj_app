@@ -11,6 +11,7 @@ import { filter } from 'rxjs/operators';
 import { AuthComponent } from './auth/auth.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
+import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
 
 @Component({
     selector: 'app-root',
@@ -19,7 +20,8 @@ import { MatDialog } from '@angular/material/dialog';
         RouterOutlet,
         MatToolbarModule,
         CommonModule,
-        AuthComponent
+        AuthComponent,
+        CKEditorModule
     ],
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.scss'],
