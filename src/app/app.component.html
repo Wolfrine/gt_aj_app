@@ -1,7 +1,9 @@
-<mat-toolbar *ngIf="checkhome()" class="navbar">
-    <a href="home"> <span>{{ title }}</span></a>
-</mat-toolbar>
+<div *ngIf="subdomainChecked">
+    <mat-toolbar *ngIf="checkhome()" class="navbar">
+        <a href="home"> <span>{{ title }}</span></a>
+    </mat-toolbar>
 
-<router-outlet />
+    <router-outlet />
 
-<div class="footer">GT Gurukul © 2024</div>
+    <div class="footer">GT Gurukul © 2024</div>
+</div>

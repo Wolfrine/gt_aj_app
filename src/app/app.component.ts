@@ -27,6 +27,7 @@ export class AppComponent implements OnInit {
     themeColor = '#3f51b5';
     header = 'defaultHeader';
     location_path = '';
+    subdomainChecked = false; // Flag to indicate subdomain check status
 
     constructor(
         private customizationService: CustomizationService,
@@ -36,6 +37,8 @@ export class AppComponent implements OnInit {
         private viewportScroller: ViewportScroller) {
         console.log('AppComponent constructor');
     }
+
+
 
     async ngOnInit() {
 
@@ -57,8 +60,11 @@ export class AppComponent implements OnInit {
                 this.header = data.header;
                 this.applyThemeColor();
                 this.setTitle(data.websiteTitle);
-                if (data.status === 'disabled') {
-                    this.redirectToInstitutes(subdomain);
+                console.log(data.status);
+                if (data.status === 'disabled' || data.status === 'pending') {
+                    this.redirectToRegistration(subdomain);
+                } else {
+                    this.subdomainChecked = true; // Set flag to true after successful check
                 }
             }
         } catch (error: any) {
