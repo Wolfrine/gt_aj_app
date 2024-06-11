@@ -4,6 +4,8 @@ import { Firestore, collection, addDoc, doc, setDoc, getDoc, DocumentData } from
 import { authState } from 'rxfire/auth';
 import { Observable, of, from } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
+import { AuthComponent } from './common/auth/auth.component';
+import { MatDialog } from '@angular/material/dialog';
 
 interface UserRole extends DocumentData {
     role: string;
@@ -18,8 +20,12 @@ interface UserRole extends DocumentData {
 export class AuthService {
     user$: Observable<FirebaseUser | null>;
 
-    constructor(private auth: Auth, private firestore: Firestore) {
+    constructor(private auth: Auth, private firestore: Firestore, private dialog: MatDialog) {
         this.user$ = authState(this.auth);
+    }
+
+    openAuthDialog(): void {
+        this.dialog.open(AuthComponent);
     }
 
     googleSignIn(): Promise<UserCredential> {

@@ -1,0 +1,41 @@
+.observation-list {
+    position: fixed;
+    bottom: 50px;
+    right: 10px;
+    width: 300px;
+    background: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    transition: transform 0.3s ease;
+    transform: translateY(100%);
+}
+
+.observation-list.expanded {
+    transform: translateY(0);
+}
+
+.observation-list .header {
+    padding: 10px;
+    background: #3f51b5;
+    color: white;
+    cursor: pointer;
+}
+
+.observation-list .content {
+    padding: 10px;
+}
+
+.observation-list ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.observation-list li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.observation-list li input[type="checkbox"] {
+    margin-right: 10px;
+}

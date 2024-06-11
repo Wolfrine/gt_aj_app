@@ -36,15 +36,24 @@
     align-items: center;
     z-index: 1000;
 
-
     .auth-card {
+        position: relative; // Required for positioning the cancel button
         background-color: white;
         border-radius: 0.3em;
         padding: 16px 44px;
         text-align: center;
         min-width: 420px;
-    }
 
+        .cancel-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+    }
 }
 
 .largeOr {
@@ -56,7 +65,6 @@
         padding: 12px;
     }
 }
-
 
 hr {
     margin: 24px 0;

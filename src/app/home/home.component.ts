@@ -4,6 +4,7 @@ import { NewsEventsComponent } from '../news-events/news-events.component';
 import { MatDividerModule } from '@angular/material/divider';
 import { DOCUMENT } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
+import { AuthService } from '../auth.service';
 
 @Component({
     selector: 'app-home',
@@ -23,8 +24,13 @@ export class HomeComponent implements OnInit {
     constructor(
         @Inject(DOCUMENT) private document: Document,
         private renderer: Renderer2,
-        private customizationService: CustomizationService
+        private customizationService: CustomizationService,
+        private authService: AuthService
     ) { }
+
+    openSignIn(): void {
+        this.authService.openAuthDialog();
+    }
 
     @HostListener('window:scroll', [])
     onWindowScroll() {

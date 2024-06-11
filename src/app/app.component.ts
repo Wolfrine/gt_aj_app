@@ -8,10 +8,11 @@ import { Location } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { ViewportScroller } from '@angular/common';
 import { filter } from 'rxjs/operators';
-import { AuthComponent } from './auth/auth.component';
+import { ObservationListComponent } from './common/observation-list/observation-list.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatDialog } from '@angular/material/dialog';
 import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
+import { ActivatedRoute } from '@angular/router';
+import { AuthService } from './auth.service';
 
 @Component({
     selector: 'app-root',
@@ -20,8 +21,8 @@ import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
         RouterOutlet,
         MatToolbarModule,
         CommonModule,
-        AuthComponent,
-        CKEditorModule
+        CKEditorModule,
+        ObservationListComponent
     ],
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.scss'],
@@ -33,6 +34,7 @@ export class AppComponent implements OnInit {
     header = 'defaultHeader';
     location_path = '';
     subdomainChecked = false; // Flag to indicate subdomain check status
+    showObservationList = false;
 
     constructor(
         private customizationService: CustomizationService,
@@ -41,13 +43,14 @@ export class AppComponent implements OnInit {
         private router: Router,
         private viewportScroller: ViewportScroller,
         private _snackBar: MatSnackBar,
-        private dialog: MatDialog
+        private route: ActivatedRoute,
+        private authService: AuthService
     ) {
         console.log('AppComponent constructor');
     }
 
     openSignIn() {
-        this.dialog.open(AuthComponent);
+        this.authService.openAuthDialog();
     }
 
     openSnackBar(message: string, action: string) {
@@ -88,10 +91,17 @@ export class AppComponent implements OnInit {
                 console.error(error);
             }
         }
+
+        // --- Show observation list when obsl variable is passed from URL
+        this.route.queryParams.subscribe(params => {
+            console.log(params['obsl']);
+            this.showObservationList = params['obsl'] === '1';
+        });
     }
 
+    // Display navbar in all pages other than /home
     checkhome() {
-        if (this.location.path() == '/home' || this.location.path() == '/')
+        if (this.location.path() == '/home' || this.location.path() == '/' || this.location.path().includes('/home'))
             return false
         else
             return true

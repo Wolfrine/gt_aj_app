@@ -1,0 +1,13 @@
+<div class="observation-list" [class.expanded]="expanded">
+    <div class="header" (click)="toggleList()">Observation List</div>
+    <div class="content" *ngIf="expanded">
+        <ul>
+            <li *ngFor="let obs of observations">
+                <input type="checkbox" [checked]="obs.completed" (change)="markAsCompleted(obs.id)">
+                {{ obs.text }}
+            </li>
+        </ul>
+        <input type="text" [(ngModel)]="newObservation" placeholder="Add new observation">
+        <button (click)="addObservation()">Add</button>
+    </div>
+</div>
