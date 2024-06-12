@@ -42,7 +42,11 @@
         border-radius: 0.3em;
         padding: 16px 44px;
         text-align: center;
-        min-width: 420px;
+        min-width: 300px;
+
+        @media screen and (max-width: 325px) {
+            min-width: 220px;
+        }
 
         .cancel-button {
             position: absolute;

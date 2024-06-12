@@ -20,6 +20,7 @@
     a {
         color: inherit;
         text-decoration: inherit;
+        cursor: pointer;
     }
 
     span {
@@ -34,6 +35,29 @@
         text-decoration: underline;
     }
 }
+
+.profile {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    cursor: pointer;
+
+    .profile-pic {
+        height: 40px;
+        width: 40px;
+        background-color: rgb(255, 255, 255);
+        border-radius: 50%;
+        box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+
+        img {
+            height: 38px;
+            width: 38px;
+            border-radius: 50%;
+            margin: 1px;
+        }
+    }
+}
+
 
 .logo {
     height: 36px;

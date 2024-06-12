@@ -4,5 +4,6 @@
         <p class="news-article-date">{{ newsItem?.date?.toDate() | date: 'fullDate' }}</p>
     </div>
     <mat-divider></mat-divider>
+    <img mat-card-image [src]="newsItem.imageUrl" *ngIf="newsItem.imageUrl" class="news-image">
     <div class="news-article-content" [innerHTML]="newsItem?.content"></div>
 </div>

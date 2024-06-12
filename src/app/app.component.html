@@ -1,7 +1,23 @@
 <div *ngIf="subdomainChecked">
     <mat-toolbar *ngIf="checkhome()" class="navbar">
-        <a href="home"> {{ title }}</a>
-        <span (click)="openSignIn()"> Sign In </span>
+        <a (click)="homeroute()"> {{ title }}</a>
+        <div class="profile">
+            <span (click)="openSignIn()" *ngIf="!user"> Sign In </span>
+            <div class="profile-pic" *ngIf="user">
+                <img [src]="user.photoURL" [matMenuTriggerFor]="menu">
+                <mat-menu #menu="matMenu">
+
+                    <mat-icon fontIcon="account_circle"></mat-icon>
+                    <button mat-menu-item>
+                        <span>Profile</span>
+                    </button>
+                    <button mat-menu-item (click)="onSignOut()">
+                        <mat-icon></mat-icon>
+                        <span>Sign Out</span>
+                    </button>
+                </mat-menu>
+            </div>
+        </div>
     </mat-toolbar>
 
     <content>

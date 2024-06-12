@@ -1,4 +1,4 @@
-import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -13,6 +13,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from './auth.service';
+import { User } from '@angular/fire/auth';
+import { MatMenuModule } from '@angular/material/menu';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
     selector: 'app-root',
@@ -22,7 +25,8 @@ import { AuthService } from './auth.service';
         MatToolbarModule,
         CommonModule,
         CKEditorModule,
-        ObservationListComponent
+        ObservationListComponent,
+        MatMenuModule,
     ],
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.scss'],
@@ -35,6 +39,7 @@ export class AppComponent implements OnInit {
     location_path = '';
     subdomainChecked = false; // Flag to indicate subdomain check status
     showObservationList = false;
+    user: User | null = null;
 
     constructor(
         private customizationService: CustomizationService,
@@ -44,20 +49,55 @@ export class AppComponent implements OnInit {
         private viewportScroller: ViewportScroller,
         private _snackBar: MatSnackBar,
         private route: ActivatedRoute,
-        private authService: AuthService
+        private authService: AuthService,
+        @Inject(PLATFORM_ID) private platformId: Object
     ) {
         console.log('AppComponent constructor');
+    }
+
+    homeroute() {
+        if (this.user) {
+            this.router.navigate(['/dashboard']);
+        }
+        else {
+            this.router.navigate(['/home']);
+        }
     }
 
     openSignIn() {
         this.authService.openAuthDialog();
     }
 
+    onSignOut() {
+        this.user = null;
+        this.authService.signOut()
+            .then(() => {
+                console.log('Successfully logged out');
+                this.openSnackBar("Successfully logged out", "Cancel");
+            })
+            .catch((error) => {
+                console.error('Error during sign out:', error);
+            });
+    }
+
     openSnackBar(message: string, action: string) {
-        this._snackBar.open(message, action);
+        this._snackBar.open(message, action,
+            {
+                duration: 2000
+            });
     }
 
     async ngOnInit() {
+
+        this.authService.user$.subscribe({
+            next: user => {
+                if (user && this.authService.logincnt == 0) {
+                    console.log('User logged in:', user);
+                    this.openSnackBar("Logged in as " + user?.displayName, "Cancel");
+                    this.user = user;
+                }
+            }
+        });
 
         this.router.events.pipe(
             filter(event => event instanceof NavigationEnd)
@@ -109,9 +149,18 @@ export class AppComponent implements OnInit {
 
 
 
+    ngAfterViewInit() {
+        setTimeout(() => {
+            if (isPlatformBrowser(this.platformId)) {
+                this.applyThemeColor();
+            }
+        }, 0); // Delay to ensure DOM is ready
+    }
+
     applyThemeColor() {
         const metaThemeColor = document.querySelector("meta[name=theme-color]") as HTMLMetaElement;
         document.documentElement.style.setProperty('--theme-color', this.themeColor);
+
         if (metaThemeColor) {
             metaThemeColor.setAttribute("content", this.themeColor);
         } else {
@@ -121,6 +170,7 @@ export class AppComponent implements OnInit {
             document.getElementsByTagName('head')[0].appendChild(meta);
         }
     }
+
 
     setTitle(newTitle: string) {
         this.titleService.setTitle(newTitle);

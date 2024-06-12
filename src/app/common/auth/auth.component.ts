@@ -30,4 +30,15 @@ export class AuthComponent {
         this.dialogRef.close();
     }
 
+    ngOnInit() {
+
+        this.authService.user$.subscribe({
+            next: user => {
+                if (user) {
+                    this.dialogRef.close();
+                }
+            }
+        });
+    }
+
 }

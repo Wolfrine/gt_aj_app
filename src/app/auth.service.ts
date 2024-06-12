@@ -19,6 +19,7 @@ interface UserRole extends DocumentData {
 })
 export class AuthService {
     user$: Observable<FirebaseUser | null>;
+    logincnt = 0;
 
     constructor(private auth: Auth, private firestore: Firestore, private dialog: MatDialog) {
         this.user$ = authState(this.auth);
