@@ -1,4 +1,4 @@
-import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA, Inject, PLATFORM_ID, Renderer2, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -16,6 +16,7 @@ import { AuthService } from './auth.service';
 import { User } from '@angular/fire/auth';
 import { MatMenuModule } from '@angular/material/menu';
 import { isPlatformBrowser } from '@angular/common';
+
 
 @Component({
     selector: 'app-root',
@@ -50,7 +51,9 @@ export class AppComponent implements OnInit {
         private _snackBar: MatSnackBar,
         private route: ActivatedRoute,
         private authService: AuthService,
-        @Inject(PLATFORM_ID) private platformId: Object
+        @Inject(PLATFORM_ID) private platformId: Object,
+        private renderer: Renderer2,
+        private elRef: ElementRef
     ) {
         console.log('AppComponent constructor');
     }
@@ -158,16 +161,18 @@ export class AppComponent implements OnInit {
     }
 
     applyThemeColor() {
-        const metaThemeColor = document.querySelector("meta[name=theme-color]") as HTMLMetaElement;
-        document.documentElement.style.setProperty('--theme-color', this.themeColor);
+        const head = this.elRef.nativeElement.ownerDocument.head;
+        const metaThemeColor = head.querySelector("meta[name=theme-color]");
+
+        this.renderer.setStyle(document.documentElement, '--theme-color', this.themeColor);
 
         if (metaThemeColor) {
-            metaThemeColor.setAttribute("content", this.themeColor);
+            this.renderer.setAttribute(metaThemeColor, 'content', this.themeColor);
         } else {
-            const meta = document.createElement('meta');
-            meta.name = 'theme-color';
-            meta.content = this.themeColor;
-            document.getElementsByTagName('head')[0].appendChild(meta);
+            const meta = this.renderer.createElement('meta');
+            this.renderer.setAttribute(meta, 'name', 'theme-color');
+            this.renderer.setAttribute(meta, 'content', this.themeColor);
+            this.renderer.appendChild(head, meta);
         }
     }
 
