@@ -15,18 +15,30 @@ export class ObservationListComponent {
     observations: any[] = [];
     newObservation = '';
     pageUrl = '';
+    normalizedPageUrl = '';
     expanded = false;
 
     constructor(private firestore: Firestore, private route: ActivatedRoute, private router: Router) { }
 
     ngOnInit(): void {
         this.pageUrl = this.router.url; // Get the current page URL
+        this.normalizedPageUrl = this.normalizeUrl(this.pageUrl); // Normalize the URL
         this.loadObservations();
+    }
+
+    normalizeUrl(url: string): string {
+        const urlParts = url.split('/');
+        const filteredParts = urlParts.filter(part => part !== '');
+
+        if (filteredParts.length > 1) {
+            return '/' + filteredParts.slice(0, -1).join('/');
+        }
+        return url;
     }
 
     async loadObservations(): Promise<void> {
         const col = collection(this.firestore, 'observations');
-        const q = query(col, where('page', '==', this.pageUrl));
+        const q = query(col, where('page', '==', this.normalizedPageUrl));
         const snapshot = await getDocs(q);
         this.observations = snapshot.docs.map(doc => ({
             id: doc.id,
@@ -37,7 +49,7 @@ export class ObservationListComponent {
     async addObservation(): Promise<void> {
         if (this.newObservation.trim()) {
             await addDoc(collection(this.firestore, 'observations'), {
-                page: this.pageUrl,
+                page: this.normalizedPageUrl,
                 text: this.newObservation,
                 completed: false
             });

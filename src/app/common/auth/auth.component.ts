@@ -1,25 +1,28 @@
-import { Component } from '@angular/core';
+import { Component, Optional } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { AuthService } from '../../auth.service';
 
 @Component({
     selector: 'app-auth',
     standalone: true,
-    imports: [],
     templateUrl: './auth.component.html',
-    styleUrl: './auth.component.scss'
+    styleUrls: ['./auth.component.scss']
 })
 export class AuthComponent {
 
     constructor(
         private authService: AuthService,
-        private dialogRef: MatDialogRef<AuthComponent>
+        @Optional() private dialogRef: MatDialogRef<AuthComponent>
     ) { }
 
     onGoogleSignIn() {
         this.authService.googleSignIn()
             .then(() => {
                 console.log('Successfully logged in');
+                if (this.dialogRef) {
+                    this.dialogRef.close();
+                }
+                this.authService.handlePostLoginRedirect();  // Handle post-login redirect
             })
             .catch((error) => {
                 console.error('Error during Google sign-in:', error);
@@ -27,18 +30,24 @@ export class AuthComponent {
     }
 
     onCancel(): void {
-        this.dialogRef.close();
+        if (this.dialogRef) {
+            this.dialogRef.close();
+        } else {
+            this.authService.redirectToLogin();
+        }
     }
 
     ngOnInit() {
-
         this.authService.user$.subscribe({
             next: user => {
                 if (user) {
-                    this.dialogRef.close();
+                    if (this.dialogRef) {
+                        this.dialogRef.close();
+                    } else {
+                        this.authService.handlePostLoginRedirect();  // Handle post-login redirect
+                    }
                 }
             }
         });
     }
-
 }

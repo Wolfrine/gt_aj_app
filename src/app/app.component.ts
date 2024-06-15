@@ -94,7 +94,7 @@ export class AppComponent implements OnInit {
 
         this.authService.user$.subscribe({
             next: user => {
-                if (user && this.authService.logincnt == 0) {
+                if (user) {
                     console.log('User logged in:', user);
                     this.openSnackBar("Logged in as " + user?.displayName, "Cancel");
                     this.user = user;
