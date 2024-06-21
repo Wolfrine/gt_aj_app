@@ -1,6 +1,6 @@
 import { Component, Optional } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
-import { AuthService } from '../../auth.service';
+import { AuthService } from './auth.service';
 
 @Component({
     selector: 'app-auth',

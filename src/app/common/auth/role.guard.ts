@@ -14,10 +14,10 @@ export class RoleGuard implements CanActivate {
         next: ActivatedRouteSnapshot,
         state: RouterStateSnapshot
     ): Observable<boolean> {
-        const expectedRole = next.data['expectedRole'];
+        const expectedRoles = next.data['expectedRoles'] as string[] || [];
 
         return this.authService.getUserRole().pipe(
-            map(role => role === expectedRole),
+            map(role => expectedRoles.includes(role)),
             tap(isAuthorized => {
                 if (!isAuthorized) {
                     this.router.navigate(['/unauthorized']);

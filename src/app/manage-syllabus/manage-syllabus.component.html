@@ -1,0 +1,75 @@
+<div class="syllabus-container">
+    <h1>Manage Syllabus</h1>
+    <div>
+        <mat-form-field>
+            <mat-label>Select Standard</mat-label>
+            <mat-select [(ngModel)]="selectedStandardId">
+                <mat-option *ngFor="let standard of syllabusList" [value]="standard.id">{{ standard.name }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+
+    <div *ngIf="selectedStandard">
+        <h2>{{ selectedStandard.name }}</h2>
+        <div>
+            <mat-form-field>
+                <mat-label>Select Board</mat-label>
+                <mat-select id="board-select" [(ngModel)]="selectedBoard">
+                    <mat-option *ngFor="let board of getBoardKeys()" [value]="board">
+                        {{ board | uppercase }}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+            <button mat-icon-button (click)="toggleNewBoardInput()">
+                <mat-icon>add</mat-icon>
+            </button>
+            <div *ngIf="showNewBoardInput">
+                <form [formGroup]="newBoardForm" (ngSubmit)="addBoard()">
+                    <input formControlName="boardName" placeholder="Enter board name" />
+                    <button type="submit">Add</button>
+                </form>
+            </div>
+            <mat-accordion *ngIf="selectedStandard.boards[selectedBoard]">
+                <mat-expansion-panel *ngFor="let subject of selectedStandard.boards[selectedBoard].subjects">
+                    <mat-expansion-panel-header>
+                        {{ subject.name }}
+                    </mat-expansion-panel-header>
+                    <ul>
+                        <li *ngFor="let chapter of subject.chapters">
+                            <div *ngIf="editingChapterId !== chapter.id" (dblclick)="toggleEditChapter(chapter)">
+                                {{ chapter.name }}
+                            </div>
+                            <input *ngIf="editingChapterId === chapter.id" [(ngModel)]="chapter.name"
+                                (blur)="toggleEditChapter(chapter)" />
+                        </li>
+                    </ul>
+                    <div>
+                        <button mat-icon-button (click)="toggleNewChapterInput(subject.id)">
+                            <mat-icon>add</mat-icon>
+                        </button>
+                        <div *ngIf="showNewChapterInput[subject.id]">
+                            <form [formGroup]="newChapterForm" (ngSubmit)="addChapter(subject)">
+                                <input formControlName="chapterName" placeholder="Enter chapter name" />
+                                <button type="submit">Add</button>
+                            </form>
+                        </div>
+                    </div>
+                </mat-expansion-panel>
+            </mat-accordion>
+            <br />
+            <div>
+                <button mat-fab extended (click)="toggleNewSubjectInput()">
+                    <mat-icon>add</mat-icon> Add Subject
+                </button>
+                <br />
+                <div *ngIf="selectedStandard.boards[selectedBoard] && showNewSubjectInput">
+                    <br />
+                    <form [formGroup]="newSubjectForm" (ngSubmit)="addSubject()">
+                        <input formControlName="subjectName" placeholder="Enter subject name" />
+                        <button type="submit">Add</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

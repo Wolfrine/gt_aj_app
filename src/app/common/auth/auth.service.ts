@@ -6,8 +6,8 @@ import { Observable, of, from } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { CustomizationService } from './customization.service';
-import { AuthComponent } from './common/auth/auth.component';
+import { CustomizationService } from '../../customization.service';
+import { AuthComponent } from './auth.component';
 
 interface UserRole extends DocumentData {
     role: string;
@@ -56,7 +56,7 @@ export class AuthService {
         return authState(this.auth).pipe(
             switchMap(user => {
                 if (user) {
-                    const userDocRef = doc(this.firestore, `${this.customizationService.getSubdomainFromUrl}/users/${user.email}`);
+                    const userDocRef = doc(this.firestore, `institutes/${this.customizationService.getSubdomainFromUrl()}/users/${user.email}`);
                     return from(getDoc(userDocRef)).pipe(
                         map(docSnap => {
                             if (docSnap.exists()) {
