@@ -1,117 +1,208 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { FormsModule, ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
-import { SyllabusService } from './syllabus.service';
-import { Syllabus, Board, Subject, Chapter, sampleSyllabus } from './syllabus.interface';
+import { Component, Inject } from '@angular/core';
+import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
+import { FlatTreeControl } from '@angular/cdk/tree';
+import { MatBottomSheet, MatBottomSheetModule, MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bottom-sheet';
+import { SyllabusNode, sampleSyllabus } from './syllabus.interface';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTreeModule } from '@angular/material/tree';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
+
+interface FlatNode {
+    expandable: boolean;
+    name: string;
+    level: number;
+    editable: boolean;
+    children?: SyllabusNode[];
+    id: string;
+}
+
+@Component({
+    selector: 'bottom-sheet',
+    template: `
+    <div>
+      <mat-form-field>
+        <mat-label>{{data.placeholder}}</mat-label>
+        <input matInput #nodeName [value]="data.currentName">
+      </mat-form-field>
+      <button mat-button (click)="addNode(nodeName.value)">Save</button>
+    </div>
+  `,
+    standalone: true,
+    imports: [
+        CommonModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatButtonModule
+    ]
+})
+export class BottomSheetComponent {
+    constructor(
+        private _bottomSheetRef: MatBottomSheetRef<BottomSheetComponent>,
+        @Inject(MAT_BOTTOM_SHEET_DATA) public data: { placeholder: string, currentName: string }
+    ) { }
+
+    addNode(name: string): void {
+        this._bottomSheetRef.dismiss(name);
+    }
+}
 
 @Component({
     selector: 'app-manage-syllabus',
-    standalone: true,
     templateUrl: './manage-syllabus.component.html',
     styleUrls: ['./manage-syllabus.component.scss'],
-    imports: [CommonModule, MatExpansionModule, FormsModule, ReactiveFormsModule, MatIconModule, MatInputModule, MatSelectModule]
+    standalone: true,
+    imports: [
+        CommonModule,
+        MatTreeModule,
+        MatIconModule,
+        MatButtonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MatBottomSheetModule,
+        MatFormFieldModule,
+        MatInputModule,
+        BottomSheetComponent
+    ]
 })
-export class ManageSyllabusComponent implements OnInit {
-    syllabusList: Syllabus[] = sampleSyllabus;
-    selectedStandardId: string = '10'; // Default standard
-    selectedBoard: string = 'icse'; // Default board
-    newBoardForm: FormGroup;
-    newSubjectForm: FormGroup;
-    newChapterForm: FormGroup;
-    editingChapterId: string | null = null;
-    showNewBoardInput: boolean = false;
-    showNewSubjectInput: boolean = false;
-    showNewChapterInput: { [subjectId: string]: boolean } = {};
+export class ManageSyllabusComponent {
+    private _transformer = (node: SyllabusNode, level: number): FlatNode => ({
+        expandable: !!node.children && node.children.length > 0,
+        name: node.name,
+        level: level,
+        editable: false,
+        children: node.children,
+        id: node.id
+    });
 
-    constructor(private syllabusService: SyllabusService) {
-        this.newBoardForm = new FormGroup({
-            boardName: new FormControl(''),
-        });
+    treeControl = new FlatTreeControl<FlatNode>(
+        node => node.level,
+        node => node.expandable
+    );
 
-        this.newSubjectForm = new FormGroup({
-            subjectName: new FormControl(''),
-        });
+    treeFlattener = new MatTreeFlattener(
+        this._transformer,
+        node => node.level,
+        node => node.expandable,
+        node => node.children
+    );
 
-        this.newChapterForm = new FormGroup({
-            chapterName: new FormControl(''),
+    dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
+
+    constructor(private _bottomSheet: MatBottomSheet) {
+        this.dataSource.data = sampleSyllabus;
+    }
+
+    hasChild = (_: number, node: FlatNode) => node.expandable;
+
+    addStandard() {
+        this.openBottomSheet('New Standard', (name: string) => {
+            const newStandard: SyllabusNode = {
+                id: 'new-standard-' + Date.now(),
+                name: name,
+                children: []
+            };
+            const data = this.dataSource.data;
+            data.push(newStandard);
+            this.dataSource.data = data;
         });
     }
 
-    ngOnInit(): void {
-        this.syllabusService.getSyllabusList().subscribe(data => {
-            this.syllabusList = data;
+    addChild(node: FlatNode) {
+        const parentNode = this.treeControl.dataNodes.find(n => n.id === node.id);
+        if (!parentNode) {
+            return;
+        }
+
+        let placeholder: string;
+        switch (parentNode.level) {
+            case 0:
+                placeholder = 'New Board';
+                break;
+            case 1:
+                placeholder = 'New Subject';
+                break;
+            case 2:
+                placeholder = 'New Chapter';
+                break;
+            default:
+                placeholder = 'New Node';
+        }
+
+        this.openBottomSheet(placeholder, (name: string) => {
+            const newNode: SyllabusNode = { id: `new-${placeholder.toLowerCase().replace(' ', '-')}-${Date.now()}`, name: name, children: [] };
+            if (!parentNode.children) {
+                parentNode.children = [];
+            }
+            parentNode.children.push(newNode);
+            this.updateDataSource();
+            this.treeControl.expand(parentNode);
         });
     }
 
-    get selectedStandard(): Syllabus | undefined {
-        return this.syllabusList.find(standard => standard.id === this.selectedStandardId);
+    editNode(node: FlatNode) {
+        this.openBottomSheet('Edit Node', (name: string) => {
+            this.updateNodeName(node, name);
+        }, node.name);
     }
 
-    getBoardKeys(): string[] {
-        return this.selectedStandard ? Object.keys(this.selectedStandard.boards) : [];
+    saveNode(node: FlatNode) {
+        node.editable = false;
+        this.updateDataSource();
     }
 
-    addBoard(): void {
-        const boardName = this.newBoardForm.value.boardName;
-        if (this.selectedStandard && boardName && !this.selectedStandard.boards[boardName]) {
-            this.syllabusService.addBoardToStandard(this.selectedStandard.id, boardName).then(() => {
-                this.selectedStandard!.boards[boardName] = { subjects: [] };
-                this.newBoardForm.reset();
-                this.showNewBoardInput = false;
-            });
+    makeEditable(node: SyllabusNode) {
+        const flatNode = this.treeControl.dataNodes.find(n => n.id === node.id);
+        if (flatNode) {
+            flatNode.editable = true;
         }
     }
 
-    addSubject(): void {
-        const subjectName = this.newSubjectForm.value.subjectName;
-        if (this.selectedStandard && subjectName && this.selectedBoard) {
-            const board = this.selectedStandard.boards[this.selectedBoard];
-            if (board) {
-                this.syllabusService.addSubjectToBoard(this.selectedStandard.id, this.selectedBoard, subjectName).then(() => {
-                    board.subjects.push({ id: subjectName.toLowerCase(), name: subjectName, chapters: [] });
-                    this.newSubjectForm.reset();
-                    this.showNewSubjectInput = false;
-                });
+    updateDataSource() {
+        // Update the dataSource to trigger change detection
+        const data = this.dataSource.data;
+        this.dataSource.data = [...data];
+    }
+
+    updateNodeName(node: FlatNode, newName: string) {
+        // Update the FlatNode name
+        node.name = newName;
+        // Find the corresponding SyllabusNode and update its name
+        const data = this.dataSource.data;
+        const nodeToUpdate = this.findNodeById(data, node.id);
+        if (nodeToUpdate) {
+            nodeToUpdate.name = newName;
+        }
+        this.dataSource.data = data;
+    }
+
+    findNodeById(nodes: SyllabusNode[], id: string): SyllabusNode | null {
+        for (const node of nodes) {
+            if (node.id === id) {
+                return node;
+            }
+            if (node.children) {
+                const foundNode = this.findNodeById(node.children, id);
+                if (foundNode) {
+                    return foundNode;
+                }
             }
         }
+        return null;
     }
 
-    addChapter(subject: Subject): void {
-        const chapterName = this.newChapterForm.value.chapterName;
-        if (chapterName && this.selectedStandard) {
-            this.syllabusService.addChapterToSubject(this.selectedStandard.id, this.selectedBoard, subject.id, chapterName).then(() => {
-                subject.chapters.push({ id: chapterName.toLowerCase(), name: chapterName });
-                this.newChapterForm.reset();
-                this.showNewChapterInput[subject.id] = false;
-            });
-        }
-    }
+    openBottomSheet(placeholder: string, callback: (name: string) => void, currentName: string = ''): void {
+        const bottomSheetRef = this._bottomSheet.open(BottomSheetComponent, {
+            data: { placeholder: placeholder, currentName: currentName }
+        });
 
-    updateChapterName(chapter: Chapter, newName: string): void {
-        if (this.selectedStandard) {
-            this.syllabusService.updateChapterName(this.selectedStandard.id, this.selectedBoard, chapter.id, chapter.id, newName).then(() => {
-                chapter.name = newName;
-            });
-        }
-    }
-
-    toggleEditChapter(chapter: Chapter): void {
-        this.editingChapterId = this.editingChapterId === chapter.id ? null : chapter.id;
-    }
-
-    toggleNewBoardInput(): void {
-        this.showNewBoardInput = !this.showNewBoardInput;
-    }
-
-    toggleNewSubjectInput(): void {
-        this.showNewSubjectInput = !this.showNewSubjectInput;
-    }
-
-    toggleNewChapterInput(subjectId: string): void {
-        this.showNewChapterInput[subjectId] = !this.showNewChapterInput[subjectId];
+        bottomSheetRef.afterDismissed().subscribe((name: string | undefined) => {
+            if (name) {
+                callback(name);
+            }
+        });
     }
 }

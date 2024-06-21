@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Firestore, collectionData, collection, doc, setDoc, updateDoc } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
-import { Syllabus } from './syllabus.interface';
+import { SyllabusNode } from './syllabus.interface';
 
 @Injectable({
     providedIn: 'root'
@@ -9,12 +9,12 @@ import { Syllabus } from './syllabus.interface';
 export class SyllabusService {
     constructor(private firestore: Firestore) { }
 
-    getSyllabusList(): Observable<Syllabus[]> {
+    getSyllabusList(): Observable<SyllabusNode[]> {
         const syllabusCollection = collection(this.firestore, 'syllabus');
-        return collectionData(syllabusCollection, { idField: 'id' }) as Observable<Syllabus[]>;
+        return collectionData(syllabusCollection, { idField: 'id' }) as Observable<SyllabusNode[]>;
     }
 
-    updateSyllabus(syllabus: Syllabus): Promise<void> {
+    updateSyllabus(syllabus: SyllabusNode): Promise<void> {
         const syllabusDocRef = doc(this.firestore, `syllabus/${syllabus.id}`);
         return setDoc(syllabusDocRef, syllabus);
     }

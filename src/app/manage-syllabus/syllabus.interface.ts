@@ -1,36 +1,28 @@
-export interface Chapter {
+export interface SyllabusNode {
     id: string;
     name: string;
+    children?: SyllabusNode[];
 }
 
-export interface Subject {
-    id: string;
+export interface FlatNode {
+    expandable: boolean;
     name: string;
-    chapters: Chapter[];
+    level: number;
 }
 
-export interface Board {
-    subjects: Subject[];
-}
-
-export interface Syllabus {
-    id: string;
-    name: string;
-    boards: { [key: string]: Board };
-}
-
-
-export const sampleSyllabus = [
+export const sampleSyllabus: SyllabusNode[] = [
     {
         id: '10',
         name: 'Standard 10',
-        boards: {
-            icse: {
-                subjects: [
+        children: [
+            {
+                id: 'icse',
+                name: 'ICSE',
+                children: [
                     {
                         id: 'math',
                         name: 'Mathematics',
-                        chapters: [
+                        children: [
                             { id: 'ch1', name: 'Chapter 1' },
                             { id: 'ch2', name: 'Chapter 2' },
                         ],
@@ -38,19 +30,21 @@ export const sampleSyllabus = [
                     {
                         id: 'sci',
                         name: 'Science',
-                        chapters: [
+                        children: [
                             { id: 'ch1', name: 'Chapter 1' },
                             { id: 'ch2', name: 'Chapter 2' },
                         ],
                     },
                 ],
             },
-            cbse: {
-                subjects: [
+            {
+                id: 'cbse',
+                name: 'CBSE',
+                children: [
                     {
                         id: 'eng',
                         name: 'English',
-                        chapters: [
+                        children: [
                             { id: 'ch1', name: 'Chapter 1' },
                             { id: 'ch2', name: 'Chapter 2' },
                         ],
@@ -58,25 +52,27 @@ export const sampleSyllabus = [
                     {
                         id: 'hist',
                         name: 'History',
-                        chapters: [
+                        children: [
                             { id: 'ch1', name: 'Chapter 1' },
                             { id: 'ch2', name: 'Chapter 2' },
                         ],
                     },
                 ],
             },
-        },
+        ],
     },
     {
         id: '11',
         name: 'Standard 11',
-        boards: {
-            icse: {
-                subjects: [
+        children: [
+            {
+                id: 'icse',
+                name: 'ICSE',
+                children: [
                     {
                         id: 'math',
                         name: 'Mathematics',
-                        chapters: [
+                        children: [
                             { id: 'ch1', name: 'Chapter 1' },
                             { id: 'ch2', name: 'Chapter 2' },
                         ],
@@ -84,19 +80,21 @@ export const sampleSyllabus = [
                     {
                         id: 'phy',
                         name: 'Physics',
-                        chapters: [
+                        children: [
                             { id: 'ch1', name: 'Chapter 1' },
                             { id: 'ch2', name: 'Chapter 2' },
                         ],
                     },
                 ],
             },
-            cbse: {
-                subjects: [
+            {
+                id: 'cbse',
+                name: 'CBSE',
+                children: [
                     {
                         id: 'chem',
                         name: 'Chemistry',
-                        chapters: [
+                        children: [
                             { id: 'ch1', name: 'Chapter 1' },
                             { id: 'ch2', name: 'Chapter 2' },
                         ],
@@ -104,13 +102,13 @@ export const sampleSyllabus = [
                     {
                         id: 'bio',
                         name: 'Biology',
-                        chapters: [
+                        children: [
                             { id: 'ch1', name: 'Chapter 1' },
                             { id: 'ch2', name: 'Chapter 2' },
                         ],
                     },
                 ],
             },
-        },
+        ],
     },
 ];
