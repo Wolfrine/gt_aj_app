@@ -1,0 +1,39 @@
+<h1>Manage Syllabus</h1>
+<h2>
+    Standards
+    <span (click)="addStandard()">+</span>
+</h2>
+
+<mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+    <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
+        <button mat-icon-button disabled></button>
+        <ng-container *ngIf="node.editable; else displayNode">
+            <input [(ngModel)]="node.name" (blur)="saveNode(node)" placeholder="New Node" />
+        </ng-container>
+        <ng-template #displayNode>
+            <span (dblclick)="editNode(node)">{{node.name}}</span>
+        </ng-template>
+        <span (click)="addChild(node)">+</span>
+    </mat-tree-node>
+
+    <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding>
+        <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'toggle ' + node.name">
+            <mat-icon>
+                {{
+                treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'
+                }}
+            </mat-icon>
+        </button>
+        <ng-container *ngIf="node.editable; else displayNode">
+            <input [(ngModel)]="node.name" (blur)="saveNode(node)" placeholder="New Node" />
+        </ng-container>
+        <ng-template #displayNode>
+            <span (dblclick)="editNode(node)">{{node.name}}</span>
+        </ng-template>
+        <span (click)="addChild(node)">+</span>
+    </mat-tree-node>
+</mat-tree>
+
+<!-- Section to display JSON structure for debugging -->
+<!-- <h2>JSON Structure</h2>
+<pre>{{ dataSource.data | json }}</pre> -->

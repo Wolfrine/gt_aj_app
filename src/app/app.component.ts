@@ -12,7 +12,7 @@ import { ObservationListComponent } from './common/observation-list/observation-
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
 import { ActivatedRoute } from '@angular/router';
-import { AuthService } from './auth.service';
+import { AuthService } from './common/auth/auth.service';
 import { User } from '@angular/fire/auth';
 import { MatMenuModule } from '@angular/material/menu';
 import { isPlatformBrowser } from '@angular/common';

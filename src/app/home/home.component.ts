@@ -4,7 +4,7 @@ import { NewsEventsComponent } from '../news-events/news-events.component';
 import { MatDividerModule } from '@angular/material/divider';
 import { DOCUMENT } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { AuthService } from '../auth.service';
+import { AuthService } from '../common/auth/auth.service';
 
 @Component({
     selector: 'app-home',
