@@ -1,0 +1,29 @@
+.container {
+    margin: 24px;
+}
+
+.action-icons {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin: 32px 20px;
+    gap: 40px;
+
+    .action {
+        text-align: center;
+    }
+
+    a {
+        text-decoration: none;
+    }
+
+    a:hover {
+        box-shadow: 0 0 1px;
+    }
+}
+
+.icon-image {
+    height: 75px;
+    width: 75px;
+    border-radius: 1em;
+}

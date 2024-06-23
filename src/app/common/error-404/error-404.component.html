@@ -1,9 +1,10 @@
 <div class="content">
-    <h1><b><u>Error 404</u> : </b> You tried looking for <span>{{this.router.url}}</span> page</h1>
-    <h1>Sorry, we couldn't find the requested resource :(</h1>
+    <h1><u>Error 404</u></h1>
+    <h2>You tried looking for <span>{{this.router.url}}</span> page</h2>
+    <h3>Sorry, we couldn't find the requested resource :(</h3>
     <a href="/home">
         <p>Click here to go to home page</p>
     </a>
     <p>OR</p>
-    <button (click)="backClicked()">Go back</button>
+    <button mat-flat-button color="primary" (click)="backClicked()">Go back</button>
 </div>

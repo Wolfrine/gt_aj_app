@@ -33,7 +33,7 @@ export class AuthComponent {
         if (this.dialogRef) {
             this.dialogRef.close();
         } else {
-            this.authService.redirectToLogin();
+            this.authService.redirectToHome();
         }
     }
 

@@ -1,0 +1,41 @@
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 2rem;
+    max-width: 600px;
+    margin: auto;
+
+    h2 {
+        margin-top: 2rem;
+        font-size: 1.5rem;
+        font-weight: 500;
+    }
+
+    mat-form-field {
+        width: 100%;
+    }
+
+    mat-radio-group {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+    }
+
+    mat-radio-button {
+        margin-right: 1rem;
+    }
+
+    button {
+        align-self: flex-end;
+        margin-top: 2rem;
+    }
+}
+
+/* Optional: add some background and padding to the form container */
+.form-container {
+    background: #f9f9f9;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}

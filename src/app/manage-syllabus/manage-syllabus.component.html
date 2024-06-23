@@ -1,39 +1,68 @@
-<h1>Manage Syllabus</h1>
-<h2>
-    Standards
-    <span (click)="addStandard()">+</span>
-</h2>
+<div class="cont">
+    <h1>Manage Syllabus</h1>
 
-<mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
-    <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
-        <button mat-icon-button disabled></button>
-        <ng-container *ngIf="node.editable; else displayNode">
-            <input [(ngModel)]="node.name" (blur)="saveNode(node)" placeholder="New Node" />
-        </ng-container>
-        <ng-template #displayNode>
-            <span (dblclick)="editNode(node)">{{node.name}}</span>
-        </ng-template>
-        <span (click)="addChild(node)">+</span>
-    </mat-tree-node>
+    <mat-tab-group>
+        <mat-tab label="Boards">
+            <h3>Manage the applicable boards</h3>
+            <pre>{{boards}}</pre>
+            <div *ngIf="boards.length > 0">
+                <div *ngFor="let board of boards">
+                    <mat-checkbox checked>
+                        {{ board }}
+                    </mat-checkbox>
+                </div>
+            </div>
+        </mat-tab>
+        <mat-tab label="Standards">
+            <h3>Manage applicable Standards for your institute</h3>
+            <pre>{{standards}}</pre>
+            <div *ngIf="standards.length > 0">
+                <div *ngFor="let standard of standards">
+                    <mat-checkbox checked>
+                        {{ standard }}
+                    </mat-checkbox>
+                </div>
+            </div>
+        </mat-tab>
+        <mat-tab label="Complete Syllabus">
+            <h2>
+                Standards
+                <span (click)="addStandard()">+</span>
+            </h2>
 
-    <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding>
-        <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'toggle ' + node.name">
-            <mat-icon>
-                {{
-                treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'
-                }}
-            </mat-icon>
-        </button>
-        <ng-container *ngIf="node.editable; else displayNode">
-            <input [(ngModel)]="node.name" (blur)="saveNode(node)" placeholder="New Node" />
-        </ng-container>
-        <ng-template #displayNode>
-            <span (dblclick)="editNode(node)">{{node.name}}</span>
-        </ng-template>
-        <span (click)="addChild(node)">+</span>
-    </mat-tree-node>
-</mat-tree>
+            <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+                <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
+                    <button mat-icon-button disabled></button>
+                    <ng-container *ngIf="node.editable; else displayNode">
+                        <input [(ngModel)]="node.name" (blur)="saveNode(node)" placeholder="New Node" />
+                    </ng-container>
+                    <ng-template #displayNode>
+                        <span (dblclick)="editNode(node)">{{node.name}}</span>
+                    </ng-template>
+                    <span (click)="addChild(node)">+</span>
+                </mat-tree-node>
 
-<!-- Section to display JSON structure for debugging -->
-<!-- <h2>JSON Structure</h2>
-<pre>{{ dataSource.data | json }}</pre> -->
+                <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding>
+                    <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'toggle ' + node.name">
+                        <mat-icon>
+                            {{
+                            treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'
+                            }}
+                        </mat-icon>
+                    </button>
+                    <ng-container *ngIf="node.editable; else displayNode">
+                        <input [(ngModel)]="node.name" (blur)="saveNode(node)" placeholder="New Node" />
+                    </ng-container>
+                    <ng-template #displayNode>
+                        <span (dblclick)="editNode(node)">{{node.name}}</span>
+                    </ng-template>
+                    <span (click)="addChild(node)">+</span>
+                </mat-tree-node>
+            </mat-tree>
+
+            <!-- Section to display JSON structure for debugging -->
+            <!-- <h2>JSON Structure</h2>
+        <pre>{{ dataSource.data | json }}</pre> -->
+        </mat-tab>
+    </mat-tab-group>
+</div>

@@ -1,1 +1,14 @@
-<p>dashboard works!</p>
+<div class="container">
+
+    <!-- Icons -->
+    <div class="action-icons">
+        <div class="action" *ngFor="let action of actionlist">
+            <a [href]="action.route">
+                <div class="icon">
+                    <img mat-card-image [src]="action.imageUrl" *ngIf="action.imageUrl" class="icon-image">
+                </div>
+                {{action.title}}
+            </a>
+        </div>
+    </div>
+</div>

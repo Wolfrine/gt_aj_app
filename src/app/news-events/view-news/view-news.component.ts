@@ -30,12 +30,21 @@ export class ViewNewsComponent implements OnInit {
     ngOnInit(): void {
         const title = this.route.snapshot.paramMap.get('title');
         if (title) {
+            console.log('news received' + title);
             this.title = title;
             this.newsService.getNewsEventById(this.customizatonservice.getSubdomainFromUrl(), this.decodeTitle(title)).subscribe(news => {
-                this.newsItem = news; // Assuming title is unique and we get an array of one item
+                if (news) {
+                    this.newsItem = news; // Assuming title is unique and we get an array of one item
+                }
+                else {
+                    console.log('invalid news');
+                    this.router.navigate(['/news']);
+                }
+
             });
         } else {
             // Handle the case when the title is null, e.g., navigate to a default route
+            console.log('invalid news');
             this.router.navigate(['/news']);
         }
     }

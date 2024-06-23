@@ -53,7 +53,7 @@ export class AppComponent implements OnInit {
         private authService: AuthService,
         @Inject(PLATFORM_ID) private platformId: Object,
         private renderer: Renderer2,
-        private elRef: ElementRef
+        private elRef: ElementRef,
     ) {
         console.log('AppComponent constructor');
     }
@@ -102,6 +102,7 @@ export class AppComponent implements OnInit {
             }
         });
 
+
         this.router.events.pipe(
             filter(event => event instanceof NavigationEnd)
         ).subscribe(() => {
@@ -115,11 +116,13 @@ export class AppComponent implements OnInit {
         try {
             const data = await this.customizationService.getCustomization(subdomain);
             if (data) {
+                console.log(data);
                 this.title = data.websiteTitle;
                 this.themeColor = data.themeColor;
                 this.header = data.header;
                 this.applyThemeColor();
                 this.setTitle(data.websiteTitle);
+                this.setFavicon(data.faviconUrl);
                 console.log(data.status);
                 if (data.status === 'disabled' || data.status === 'pending') {
                     this.redirectToRegistration(subdomain);
@@ -174,6 +177,15 @@ export class AppComponent implements OnInit {
             this.renderer.setAttribute(meta, 'content', this.themeColor);
             this.renderer.appendChild(head, meta);
         }
+    }
+
+    private setFavicon(url: string): void {
+        console.log(url);
+        const link: HTMLLinkElement = document.querySelector("link[rel*='icon']") || document.createElement('link');
+        link.type = 'image/x-icon';
+        link.rel = 'shortcut icon';
+        link.href = url;
+        document.getElementsByTagName('head')[0].appendChild(link);
     }
 
 

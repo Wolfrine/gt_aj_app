@@ -1,0 +1,32 @@
+<div class="container">
+    <h2>Manage Users</h2>
+    <div class="user-cards">
+        <mat-card class="user-card" *ngFor="let user of users">
+            <mat-card-header>
+                <mat-card-title>{{user.name}}</mat-card-title>
+                <mat-card-subtitle>{{user.email}}</mat-card-subtitle>
+            </mat-card-header>
+            <mat-divider></mat-divider>
+            <mat-card-content>
+                <p><strong>Role : </strong> <span class="val">{{user.role}}</span></p>
+                <p><strong>Status : </strong> <span class="val">{{user.status}}</span></p>
+                <mat-accordion>
+                    <mat-expansion-panel hideToggle>
+                        <mat-expansion-panel-header>
+                            <mat-panel-description>View details
+                                <mat-icon>account_circle</mat-icon>
+                            </mat-panel-description>
+                        </mat-expansion-panel-header>
+                        <pre>{{user | json}}</pre>
+                    </mat-expansion-panel>
+                </mat-accordion>
+            </mat-card-content>
+            <mat-card-actions>
+                <button mat-button color="primary" (click)="updateUserStatus(user, 'accepted')"
+                    *ngIf="user.status !== 'accepted'">Accept</button>
+                <button mat-button color="warn" (click)="updateUserStatus(user, 'rejected')"
+                    *ngIf="user.status !== 'rejected'">Reject</button>
+            </mat-card-actions>
+        </mat-card>
+    </div>
+</div>

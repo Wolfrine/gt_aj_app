@@ -1,0 +1,16 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 70vh;
+    text-align: center;
+
+    h2 {
+        margin-bottom: 1rem;
+    }
+
+    p {
+        margin-bottom: 2rem;
+    }
+}

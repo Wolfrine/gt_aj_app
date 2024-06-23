@@ -5,6 +5,8 @@ import { MatDividerModule } from '@angular/material/divider';
 import { DOCUMENT } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../common/auth/auth.service';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-home',
@@ -12,7 +14,8 @@ import { AuthService } from '../common/auth/auth.service';
     imports: [
         NewsEventsComponent,
         MatDividerModule,
-        MatButtonModule
+        MatButtonModule,
+        CommonModule
     ],
     templateUrl: './home.component.html',
     styleUrls: ['./home.component.scss'],
@@ -20,16 +23,25 @@ import { AuthService } from '../common/auth/auth.service';
 export class HomeComponent implements OnInit {
     subdomain = '';
     about = '';
+    singInDashboard = true;
 
     constructor(
         @Inject(DOCUMENT) private document: Document,
         private renderer: Renderer2,
         private customizationService: CustomizationService,
-        private authService: AuthService
+        public authService: AuthService,
+        public router: Router,
     ) { }
 
     openSignIn(): void {
+
         this.authService.openAuthDialog();
+        if (this.singInDashboard) {
+        }
+        else {
+            console.log('go to dashbard');
+            this.router.navigate(['/dashboard']);
+        }
     }
 
     @HostListener('window:scroll', [])
@@ -80,6 +92,13 @@ export class HomeComponent implements OnInit {
                 console.error('Error fetching customization data:', error);
             }
         }
+
+        this.authService.user$.subscribe(user => {
+            console.log(`AppComponent: user is ${user ? 'logged in' : 'not logged in'}`);
+            if (user) {
+                this.singInDashboard = false;
+            }
+        });
     }
 
     setThemeColor(themeColor: string) {

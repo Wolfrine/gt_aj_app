@@ -2,6 +2,13 @@
   "routes": [
     "/add-news",
     "/dashboard",
-    "/home"
+    "/home",
+    "/login",
+    "/manage-syllabus",
+    "/manage-users",
+    "/register",
+    "/register/new",
+    "/register/submitted",
+    "/unauthorized"
   ]
 }

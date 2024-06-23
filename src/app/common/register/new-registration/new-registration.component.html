@@ -1,0 +1,80 @@
+<form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
+    <h2>Personal Info</h2>
+    <mat-form-field appearance="fill">
+        <mat-label>Name</mat-label>
+        <input matInput formControlName="name" type="text" required readonly />
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="email" type="email" required readonly />
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+        <mat-label>Phone</mat-label>
+        <input matInput formControlName="phone" type="text" required />
+    </mat-form-field>
+
+    <h2>Registering as</h2>
+    <mat-radio-group formControlName="role">
+        <mat-radio-button value="student">Student</mat-radio-button>
+        <mat-radio-button value="teacher">Teacher</mat-radio-button>
+        <mat-radio-button value="parent">Parent</mat-radio-button>
+    </mat-radio-group>
+
+    <div *ngIf="registrationForm.get('role')?.value === 'student'">
+        <h2>Registration Area</h2>
+        <mat-form-field appearance="fill">
+            <mat-label>Standard</mat-label>
+            <mat-select formControlName="standard" required>
+                <mat-option *ngFor="let standard of standards" [value]="standard.id">
+                    {{ standard.name }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+            <mat-label>Board</mat-label>
+            <mat-select formControlName="board" required>
+                <mat-option *ngFor="let board of boards" [value]="board">
+                    {{ board }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+
+    <div *ngIf="registrationForm.get('role')?.value === 'teacher'">
+        <h2>Registration Area</h2>
+        <mat-form-field appearance="fill">
+            <mat-label>Standards</mat-label>
+            <mat-select formControlName="standards" multiple required>
+                <mat-option *ngFor="let standard of standards" [value]="standard.id">
+                    {{ standard.name }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+            <mat-label>Boards</mat-label>
+            <mat-select formControlName="boards" multiple required>
+                <mat-option *ngFor="let board of boards" [value]="board">
+                    {{ board }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+            <mat-label>Subjects</mat-label>
+            <mat-select formControlName="subjects" multiple required>
+                <mat-option *ngFor="let subject of subjects" [value]="subject">
+                    {{ subject }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+
+    <div *ngIf="registrationForm.get('role')?.value === 'parent'">
+        <h2>Registration Area</h2>
+        <mat-form-field appearance="fill">
+            <mat-label>Child Email ID</mat-label>
+            <input matInput formControlName="childEmail" type="email" required />
+        </mat-form-field>
+    </div>
+
+    <button mat-raised-button color="primary" type="submit" [disabled]="registrationForm.invalid">Register</button>
+</form>

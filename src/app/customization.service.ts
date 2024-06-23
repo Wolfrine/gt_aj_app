@@ -1,6 +1,6 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Firestore, collection, query, where, getDocs, DocumentData, QuerySnapshot } from '@angular/fire/firestore';
+import { Firestore, collection, query, where, getDocs, DocumentData, QuerySnapshot, doc, getDoc } from '@angular/fire/firestore';
 
 @Injectable({
     providedIn: 'root'
@@ -66,5 +66,15 @@ export class CustomizationService {
         const host = window.location.host;
         const subdomain = host.split('.')[0];
         return subdomain;
+    }
+
+    async getFaviconUrl(subdomain: string): Promise<string> {
+        const docRef = doc(this.firestore, `registrations/${subdomain}`);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            return data?.['faviconUrl'] || '';
+        }
+        return '';
     }
 }

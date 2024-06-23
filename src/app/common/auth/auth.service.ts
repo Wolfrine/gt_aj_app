@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Auth, signInWithPopup, GoogleAuthProvider, signOut, UserCredential, User as FirebaseUser } from '@angular/fire/auth';
+import { Auth, signInWithPopup, GoogleAuthProvider, signOut, UserCredential, User as FirebaseUser, user, User } from '@angular/fire/auth';
 import { Firestore, doc, getDoc, DocumentData } from '@angular/fire/firestore';
 import { authState } from 'rxfire/auth';
 import { Observable, of, from } from 'rxjs';
@@ -14,7 +14,9 @@ interface UserRole extends DocumentData {
     name?: string;
     age?: number;
     email?: string;
+    status: string;
 }
+
 
 @Injectable({
     providedIn: 'root'
@@ -32,12 +34,16 @@ export class AuthService {
     ) {
         this.user$ = authState(this.auth);
 
-        // Listen for authentication state changes
-        this.user$.subscribe(user => {
-            if (!user) {
-                this.router.navigate(['/login']);
-            }
-        });
+        // // Listen for authentication state changes
+        // this.user$.subscribe(user => {
+        //     if (!user) {
+        //         this.router.navigate(['/login']);
+        //     }
+        // });
+    }
+
+    getCurrentUser(): Observable<User | null> {
+        return authState(this.auth);
     }
 
     openAuthDialog(): void {
@@ -49,11 +55,12 @@ export class AuthService {
     }
 
     signOut() {
+        this.router.navigate(['/login']);
         return signOut(this.auth);
     }
 
     getUserRole(): Observable<string> {
-        return authState(this.auth).pipe(
+        return this.getCurrentUser().pipe(
             switchMap(user => {
                 if (user) {
                     const userDocRef = doc(this.firestore, `institutes/${this.customizationService.getSubdomainFromUrl()}/users/${user.email}`);
@@ -74,14 +81,26 @@ export class AuthService {
         );
     }
 
+    isAuthenticated(): Observable<boolean> {
+        return user(this.auth).pipe(
+            map(currentUser => !!currentUser)
+        );
+    }
+
     redirectToLogin(): void {
         this.router.navigate(['/login']);
     }
 
+    redirectToHome(): void {
+        this.router.navigate(['/home']);
+    }
+
     handlePostLoginRedirect(): void {
         if (this.redirectUrl) {
+
+            console.log('in handle' + this.redirectUrl);
             this.router.navigate([this.redirectUrl]);
-            this.redirectUrl = null;  // Clear the stored URL
+            //this.redirectUrl = null;  // Clear the stored URL
         } else {
             this.router.navigate(['/dashboard']);  // Default redirect if no URL is stored
         }

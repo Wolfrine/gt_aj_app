@@ -12,6 +12,8 @@ import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { Observable } from 'rxjs';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 interface FlatNode {
     expandable: boolean;
@@ -37,7 +39,7 @@ interface FlatNode {
         CommonModule,
         MatFormFieldModule,
         MatInputModule,
-        MatButtonModule
+        MatButtonModule,
     ]
 })
 export class BottomSheetComponent {
@@ -66,7 +68,9 @@ export class BottomSheetComponent {
         MatBottomSheetModule,
         MatFormFieldModule,
         MatInputModule,
-        BottomSheetComponent
+        BottomSheetComponent,
+        MatTabsModule,
+        MatCheckboxModule
     ]
 })
 export class ManageSyllabusComponent implements OnInit {
@@ -90,6 +94,9 @@ export class ManageSyllabusComponent implements OnInit {
         node => node.children
     );
 
+    boards: string[] = [];
+    standards: any;
+
     dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
 
     constructor(private _bottomSheet: MatBottomSheet, private syllabusService: SyllabusService) { }
@@ -97,6 +104,15 @@ export class ManageSyllabusComponent implements OnInit {
     ngOnInit() {
         this.syllabusService.getSyllabusList().subscribe(data => {
             this.dataSource.data = data;
+        });
+
+        this.syllabusService.getDistinctBoards().subscribe(data => {
+            this.boards = data;
+        });
+
+        this.syllabusService.getAllStandards().subscribe(data => {
+            console.log(data);
+            this.standards = data.map(x => x.name);
         });
     }
 
@@ -273,4 +289,6 @@ export class ManageSyllabusComponent implements OnInit {
             }
         });
     }
+
+
 }
