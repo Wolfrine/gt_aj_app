@@ -2,6 +2,7 @@
   "routes": [
     "/add-news",
     "/dashboard",
+    "/documentation",
     "/home",
     "/login",
     "/manage-syllabus",

@@ -15,6 +15,7 @@ import { RegisterComponent } from './common/register/register.component';
 import { NewRegistrationComponent } from './common/register/new-registration/new-registration.component';
 import { RegistrationSubmittedComponent } from './common/register/registration-submitted/registration-submitted.component';
 import { ManageUsersComponent } from './common/register/manage-users/manage-users.component';
+import { MarkdownComponent } from './common/markdown/markdown.component';
 
 
 
@@ -31,6 +32,7 @@ export const routes: Routes = [
     { path: 'register/new', component: NewRegistrationComponent, canActivate: [AuthGuard] },
     { path: 'register/submitted', component: RegistrationSubmittedComponent },
     { path: 'manage-users', component: ManageUsersComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRoles: ['admin'] } },
+    { path: 'documentation', component: MarkdownComponent },
     { path: '**', component: Error404Component }
 ];
 

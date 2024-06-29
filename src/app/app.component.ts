@@ -92,13 +92,15 @@ export class AppComponent implements OnInit {
 
     async ngOnInit() {
 
-        this.authService.user$.subscribe({
-            next: user => {
-                if (user) {
-                    console.log('User logged in:', user);
-                    this.openSnackBar("Logged in as " + user?.displayName, "Cancel");
-                    this.user = user;
-                }
+        this.authService.user$.subscribe(user => {
+            if (user) {
+                this.user = user;
+                this.authService.getLoginNotificationShown().subscribe(shown => {
+                    if (!shown) {
+                        this.openSnackBar(`Logged in as ${user.displayName}`, 'Cancel');
+                        this.authService.setLoginNotificationShown(true);
+                    }
+                });
             }
         });
 

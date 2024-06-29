@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Auth, signInWithPopup, GoogleAuthProvider, signOut, UserCredential, User as FirebaseUser, user, User } from '@angular/fire/auth';
 import { Firestore, doc, getDoc, DocumentData } from '@angular/fire/firestore';
 import { authState } from 'rxfire/auth';
-import { Observable, of, from } from 'rxjs';
+import { Observable, of, from, BehaviorSubject } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
@@ -17,13 +17,13 @@ interface UserRole extends DocumentData {
     status: string;
 }
 
-
 @Injectable({
     providedIn: 'root'
 })
 export class AuthService {
     user$: Observable<FirebaseUser | null>;
-    redirectUrl: string | null = null;  // Define the type of redirectUrl explicitly
+    private loginNotificationShown = new BehaviorSubject<boolean>(false);
+    redirectUrl: string | null = null;
 
     constructor(
         private auth: Auth,
@@ -33,13 +33,6 @@ export class AuthService {
         private router: Router
     ) {
         this.user$ = authState(this.auth);
-
-        // // Listen for authentication state changes
-        // this.user$.subscribe(user => {
-        //     if (!user) {
-        //         this.router.navigate(['/login']);
-        //     }
-        // });
     }
 
     getCurrentUser(): Observable<User | null> {
@@ -55,6 +48,7 @@ export class AuthService {
     }
 
     signOut() {
+        this.loginNotificationShown.next(false);  // Reset the notification flag on sign out
         this.router.navigate(['/login']);
         return signOut(this.auth);
     }
@@ -97,12 +91,17 @@ export class AuthService {
 
     handlePostLoginRedirect(): void {
         if (this.redirectUrl) {
-
-            console.log('in handle' + this.redirectUrl);
             this.router.navigate([this.redirectUrl]);
-            //this.redirectUrl = null;  // Clear the stored URL
         } else {
-            this.router.navigate(['/dashboard']);  // Default redirect if no URL is stored
+            this.router.navigate(['/dashboard']);
         }
+    }
+
+    getLoginNotificationShown(): Observable<boolean> {
+        return this.loginNotificationShown.asObservable();
+    }
+
+    setLoginNotificationShown(value: boolean): void {
+        this.loginNotificationShown.next(value);
     }
 }
