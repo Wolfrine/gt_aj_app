@@ -48,13 +48,18 @@
 .readmore {
     font-size: 12px;
     font-weight: bold;
-    color: rgba(0, 0, 0, .5);
+    color: rgba(0, 48, 77, 0.527);
     position: absolute;
     padding: 24px 0 8px;
     bottom: 0px;
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
     opacity: 0;
     transition: all 0.6s ease-in-out;
+    text-decoration: underline;
+
+    @media screen and (max-width: 425px) {
+        opacity: 1;
+    }
 }
 
 .news-image {

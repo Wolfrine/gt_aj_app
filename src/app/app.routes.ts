@@ -17,13 +17,11 @@ import { RegistrationSubmittedComponent } from './common/register/registration-s
 import { ManageUsersComponent } from './common/register/manage-users/manage-users.component';
 import { MarkdownComponent } from './common/markdown/markdown.component';
 
-
-
 export const routes: Routes = [
     { path: '', redirectTo: '/home', pathMatch: 'full' },
     { path: 'home', component: HomeComponent },
-    { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRole: [] } },
-    { path: 'add-news', component: AddNewsComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRole: ['admin'] } },
+    { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRoles: [] } },
+    { path: 'add-news', component: AddNewsComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRoles: ['admin'] } },
     { path: 'login', component: AuthComponent },
     { path: 'view-news/:title', component: ViewNewsComponent },
     { path: 'unauthorized', component: UnauthorizedComponent },
@@ -35,6 +33,7 @@ export const routes: Routes = [
     { path: 'documentation', component: MarkdownComponent },
     { path: '**', component: Error404Component }
 ];
+
 
 
 // Sample roles based authentication

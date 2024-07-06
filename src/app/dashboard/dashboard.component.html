@@ -3,7 +3,7 @@
     <!-- Icons -->
     <div class="action-icons">
         <div class="action" *ngFor="let action of actionlist">
-            <a [href]="action.route">
+            <a [routerLink]="action.route">
                 <div class="icon">
                     <img mat-card-image [src]="action.imageUrl" *ngIf="action.imageUrl" class="icon-image">
                 </div>

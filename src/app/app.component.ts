@@ -16,6 +16,7 @@ import { AuthService } from './common/auth/auth.service';
 import { User } from '@angular/fire/auth';
 import { MatMenuModule } from '@angular/material/menu';
 import { isPlatformBrowser } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 
 @Component({
@@ -28,6 +29,7 @@ import { isPlatformBrowser } from '@angular/common';
         CKEditorModule,
         ObservationListComponent,
         MatMenuModule,
+        RouterModule
     ],
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.scss'],

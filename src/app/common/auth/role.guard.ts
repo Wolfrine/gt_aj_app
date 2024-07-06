@@ -54,7 +54,7 @@ export class RoleGuard implements CanActivate {
                     }),
                     tap(isAuthorized => {
                         if (!isAuthorized) {
-                            this.router.navigate(['/unauthorized']);
+                            this.router.navigate(['/register']);
                         }
                     })
                 );
