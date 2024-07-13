@@ -25,44 +25,24 @@
             </div>
         </mat-tab>
         <mat-tab label="Complete Syllabus">
-            <h2>
-                Standards
-                <span (click)="addStandard()">+</span>
-            </h2>
-
             <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
                 <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
                     <button mat-icon-button disabled></button>
-                    <ng-container *ngIf="node.editable; else displayNode">
-                        <input [(ngModel)]="node.name" (blur)="saveNode(node)" placeholder="New Node" />
-                    </ng-container>
-                    <ng-template #displayNode>
-                        <span (dblclick)="editNode(node)">{{node.name}}</span>
-                    </ng-template>
-                    <span (click)="addChild(node)">+</span>
+                    <span>{{node.name}}</span>
                 </mat-tree-node>
 
                 <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding>
                     <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'toggle ' + node.name">
                         <mat-icon>
-                            {{
-                            treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'
-                            }}
+                            {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
                         </mat-icon>
                     </button>
-                    <ng-container *ngIf="node.editable; else displayNode">
-                        <input [(ngModel)]="node.name" (blur)="saveNode(node)" placeholder="New Node" />
-                    </ng-container>
-                    <ng-template #displayNode>
-                        <span (dblclick)="editNode(node)">{{node.name}}</span>
-                    </ng-template>
-                    <span (click)="addChild(node)">+</span>
+                    <span>{{node.name}}</span>
                 </mat-tree-node>
             </mat-tree>
-
-            <!-- Section to display JSON structure for debugging -->
-            <!-- <h2>JSON Structure</h2>
-        <pre>{{ dataSource.data | json }}</pre> -->
+        </mat-tab>
+        <mat-tab label="Upload Syllabus">
+            <app-file-upload></app-file-upload>
         </mat-tab>
     </mat-tab-group>
 </div>
