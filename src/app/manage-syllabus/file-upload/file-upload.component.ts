@@ -5,7 +5,6 @@ import * as ExcelJS from 'exceljs';
 @Component({
     selector: 'app-file-upload',
     standalone: true,
-    imports: [],
     templateUrl: './file-upload.component.html',
     styleUrls: ['./file-upload.component.scss']
 })
@@ -54,7 +53,7 @@ export class FileUploadComponent {
         const standards: { [key: string]: any } = {};
         const subjects: { [key: string]: any } = {};
         const chapters: { [key: string]: any } = {};
-        const syllabus: any[] = [];
+        const syllabus = [];
 
         for (const entry of data) {
             const boardName = entry['Board'];
@@ -62,8 +61,6 @@ export class FileUploadComponent {
             const subjectName = entry['Subject'];
             const chapterNumber = entry['Chapter No'];
             const chapterName = entry['Chapter Name'];
-
-            console.log(`Processing entry: Board: ${boardName}, Standard: ${standardName}, Subject: ${subjectName}, Chapter: ${chapterName}`);
 
             if (!boards[boardName]) {
                 boards[boardName] = {
@@ -108,12 +105,6 @@ export class FileUploadComponent {
                 createdAt: new Date().toISOString()
             });
         }
-
-        console.log('Boards:', boards);
-        console.log('Standards:', standards);
-        console.log('Subjects:', subjects);
-        console.log('Chapters:', chapters);
-        console.log('Syllabus:', syllabus);
 
         await this.syllabusService.uploadToFirestore(boards, 'boards');
         await this.syllabusService.uploadToFirestore(standards, 'standards');
