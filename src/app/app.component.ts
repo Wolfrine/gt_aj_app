@@ -1,5 +1,5 @@
 import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA, Inject, PLATFORM_ID, Renderer2, ElementRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { CustomizationService } from './customization.service';
@@ -17,7 +17,6 @@ import { User } from '@angular/fire/auth';
 import { MatMenuModule } from '@angular/material/menu';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
-
 
 @Component({
     selector: 'app-root',
@@ -56,6 +55,7 @@ export class AppComponent implements OnInit {
         @Inject(PLATFORM_ID) private platformId: Object,
         private renderer: Renderer2,
         private elRef: ElementRef,
+        @Inject(DOCUMENT) private document: Document
     ) {
         console.log('AppComponent constructor');
     }
@@ -63,8 +63,7 @@ export class AppComponent implements OnInit {
     homeroute() {
         if (this.user) {
             this.router.navigate(['/dashboard']);
-        }
-        else {
+        } else {
             this.router.navigate(['/home']);
         }
     }
@@ -86,14 +85,12 @@ export class AppComponent implements OnInit {
     }
 
     openSnackBar(message: string, action: string) {
-        this._snackBar.open(message, action,
-            {
-                duration: 2000
-            });
+        this._snackBar.open(message, action, {
+            duration: 2000
+        });
     }
 
     async ngOnInit() {
-
         this.authService.user$.subscribe(user => {
             if (user) {
                 this.user = user;
@@ -105,7 +102,6 @@ export class AppComponent implements OnInit {
                 });
             }
         });
-
 
         this.router.events.pipe(
             filter(event => event instanceof NavigationEnd)
@@ -152,12 +148,10 @@ export class AppComponent implements OnInit {
     // Display navbar in all pages other than /home
     checkhome() {
         if (this.location.path() == '/home' || this.location.path() == '/' || this.location.path().includes('/home'))
-            return false
+            return false;
         else
-            return true
+            return true;
     }
-
-
 
     ngAfterViewInit() {
         setTimeout(() => {
@@ -171,7 +165,8 @@ export class AppComponent implements OnInit {
         const head = this.elRef.nativeElement.ownerDocument.head;
         const metaThemeColor = head.querySelector("meta[name=theme-color]");
 
-        this.renderer.setStyle(document.documentElement, '--theme-color', this.themeColor);
+        this.renderer.setStyle(this.document.documentElement, '--theme-color', this.themeColor);
+        this.document.documentElement.style.setProperty('--theme-color', this.themeColor);
 
         if (metaThemeColor) {
             this.renderer.setAttribute(metaThemeColor, 'content', this.themeColor);
@@ -192,7 +187,6 @@ export class AppComponent implements OnInit {
         document.getElementsByTagName('head')[0].appendChild(link);
     }
 
-
     setTitle(newTitle: string) {
         this.titleService.setTitle(newTitle);
     }
@@ -204,6 +198,4 @@ export class AppComponent implements OnInit {
     redirectToInstitutes(subdomain: string) {
         window.location.href = `https://register.growthtutorials.in/institutes?request=${subdomain}`;
     }
-
-
 }

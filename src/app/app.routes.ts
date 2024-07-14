@@ -16,6 +16,8 @@ import { NewRegistrationComponent } from './common/register/new-registration/new
 import { RegistrationSubmittedComponent } from './common/register/registration-submitted/registration-submitted.component';
 import { ManageUsersComponent } from './common/register/manage-users/manage-users.component';
 import { MarkdownComponent } from './common/markdown/markdown.component';
+import { BasicQuizComponent } from './dashboard/quiz-module/basic-quiz/basic-quiz.component';
+import { ManageQuizDatabankComponent } from './dashboard/quiz-module/manage-quiz-databank/manage-quiz-databank.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/home', pathMatch: 'full' },
@@ -30,7 +32,10 @@ export const routes: Routes = [
     { path: 'register/new', component: NewRegistrationComponent, canActivate: [AuthGuard] },
     { path: 'register/submitted', component: RegistrationSubmittedComponent },
     { path: 'manage-users', component: ManageUsersComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRoles: ['admin'] } },
+    { path: 'quiz/basic-quiz', component: BasicQuizComponent },
+    { path: 'manage-quiz-databank', component: ManageQuizDatabankComponent },
     { path: 'documentation', component: MarkdownComponent },
+
     { path: '**', component: Error404Component }
 ];
 

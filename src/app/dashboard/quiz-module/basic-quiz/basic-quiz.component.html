@@ -1,0 +1,21 @@
+<mat-card *ngIf="questions.length > 0">
+    <mat-card-header>
+        <mat-card-title>
+            Question {{ currentQuestionIndex + 1 }} / {{ questions.length }}
+        </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+        <p>{{ questions[currentQuestionIndex].question }}</p>
+        <div *ngFor="let option of questions[currentQuestionIndex].options">
+            <button mat-raised-button color="primary" (click)="submitAnswer(option)">
+                {{ option }}
+            </button>
+        </div>
+    </mat-card-content>
+</mat-card>
+
+<mat-card *ngIf="questions.length === 0">
+    <mat-card-content>
+        <p>Loading questions...</p>
+    </mat-card-content>
+</mat-card>

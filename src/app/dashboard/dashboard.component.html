@@ -1,4 +1,9 @@
 <div class="container">
+    <div *ngIf="user$ | async as user;">
+        <h1>Welcome, {{ user.displayName }}</h1>
+        <!-- Add more user details as needed -->
+    </div>
+
 
     <!-- Icons -->
     <div class="action-icons">
@@ -12,3 +17,5 @@
         </div>
     </div>
 </div>
+
+<app-news-events></app-news-events>

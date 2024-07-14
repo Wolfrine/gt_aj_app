@@ -5,5 +5,6 @@
     </div>
     <mat-divider></mat-divider>
     <img mat-card-image [src]="newsItem.imageUrl" *ngIf="newsItem.imageUrl" class="news-image">
+    <mat-divider></mat-divider>
     <div class="news-article-content" [innerHTML]="newsItem?.content"></div>
 </div>

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
-import { Observable, of, from } from 'rxjs';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { from, Observable, of } from 'rxjs';
+import { map, switchMap, tap, take } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { Firestore, doc, getDoc } from '@angular/fire/firestore';
 import { CustomizationService } from '../../customization.service';
@@ -32,6 +32,7 @@ export class RoleGuard implements CanActivate {
                 }
 
                 return this.authService.getUserRole().pipe(
+                    take(1),  // Ensure we only take the first emitted value
                     switchMap(role => {
                         console.log('role guard:', role);
                         console.log('expectedRoles:', expectedRoles);
