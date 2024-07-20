@@ -33,7 +33,7 @@ export const routes: Routes = [
     { path: 'register/submitted', component: RegistrationSubmittedComponent },
     { path: 'manage-users', component: ManageUsersComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRoles: ['admin'] } },
     { path: 'quiz/basic-quiz', component: BasicQuizComponent },
-    { path: 'manage-quiz-databank', component: ManageQuizDatabankComponent },
+    { path: 'quiz/manage-quiz-databank', component: ManageQuizDatabankComponent },
     { path: 'documentation', component: MarkdownComponent },
 
     { path: '**', component: Error404Component }

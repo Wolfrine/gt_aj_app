@@ -1,10 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, doc, getDocs, writeBatch } from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, doc, getDoc, getDocs, writeBatch } from '@angular/fire/firestore';
 import { Observable, from, forkJoin, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { SyllabusNode } from './syllabus.interface';
-
-
 
 @Injectable({
     providedIn: 'root'
@@ -30,12 +28,24 @@ export class SyllabusService {
         );
     }
 
+    getStandardsByBoard(boardId: string): Observable<string[]> {
+        const standardsCollection = collection(this.firestore, 'syllabus/masters/standards');
+        return from(getDocs(standardsCollection)).pipe(
+            map((snapshot) => {
+                const standards = snapshot.docs
+                    .filter(doc => doc.data()['boardId'] === boardId)
+                    .map(doc => doc.data()['name']);
+                return standards;
+            })
+        );
+    }
+
     getSubjectsByStandardAndBoard(standardId: string, boardId: string): Observable<string[]> {
         const subjectsCollection = collection(this.firestore, 'syllabus/masters/subjects');
         return from(getDocs(subjectsCollection)).pipe(
             map((snapshot) => {
                 return snapshot.docs
-                    .filter(doc => doc.data()['standardId'] === standardId && doc.data()['boardId'] === boardId)
+                    .filter(doc => doc.data()['standardId'] === standardId)
                     .map(doc => doc.data()['name']);
             })
         );
@@ -46,8 +56,8 @@ export class SyllabusService {
         return from(getDocs(chaptersCollection)).pipe(
             map((snapshot) => {
                 return snapshot.docs
-                    .filter(doc => doc.data()['standardId'] === standardId && doc.data()['boardId'] === boardId && doc.data()['subjectId'] === subjectId)
-                    .map(doc => ({ id: doc.id, ...doc.data() }) as SyllabusNode);
+                    .filter(doc => doc.data()['subjectId'] === subjectId)
+                    .map(doc => ({ id: doc.id, name: doc.data()['name'] }) as SyllabusNode);
             })
         );
     }

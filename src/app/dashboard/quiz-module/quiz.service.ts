@@ -1,56 +1,49 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Firestore, collection, collectionData, addDoc, doc, setDoc, deleteDoc, query, where, getDocs, writeBatch } from '@angular/fire/firestore';
+import { Observable, from, of } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 
 @Injectable({
     providedIn: 'root',
 })
 export class QuizService {
-    constructor(private http: HttpClient) { }
+    constructor(private firestore: Firestore) { }
 
-    private questions: any[] = []; // This should be replaced with actual data source
-
-    getQuestions(): Observable<any[]> {
-        // Replace with actual API call to get questions
-        const dummyQuestions = [
-            {
-                question: 'What is the capital of France?',
-                options: ['Paris', 'London', 'Berlin', 'Madrid'],
-            },
-            {
-                question: 'What is 2 + 2?',
-                options: ['3', '4', '5', '6'],
-            },
-            // Add more questions here
-        ];
-        return of(dummyQuestions);
+    getQuestionsByChapter(boardId: string, standardId: string, subjectId: string, chapterId: string): Observable<any[]> {
+        const quizCollection = collection(this.firestore, 'quizbank');
+        const q = query(quizCollection, where('boardId', '==', boardId), where('standardId', '==', standardId), where('subjectId', '==', subjectId), where('chapterId', '==', chapterId));
+        return from(getDocs(q)).pipe(
+            map(snapshot => snapshot.docs.map(doc => doc.data()))
+        );
     }
 
     addQuestion(question: any): Observable<any> {
-        // Replace with actual API call to add a question
-        this.questions.push(question);
-        return of(question);
-    }
-
-    editQuestion(question: any): Observable<any> {
-        // Replace with actual API call to edit a question
-        const index = this.questions.findIndex(q => q.question === question.question);
-        if (index !== -1) {
-            this.questions[index] = question;
-        }
-        return of(question);
-    }
-
-    deleteQuestion(question: any): Observable<any> {
-        // Replace with actual API call to delete a question
-        this.questions = this.questions.filter(q => q.question !== question.question);
-        return of(question);
+        const quizCollection = collection(this.firestore, 'quizbank');
+        return from(addDoc(quizCollection, question));
     }
 
     uploadQuestions(questions: any[]): Observable<any> {
-        // Replace with actual API call to upload questions
-        this.questions.push(...questions);
-        return of({ success: true });
+        const quizCollection = collection(this.firestore, 'quizbank');
+        const batch = writeBatch(this.firestore);
+        questions.forEach(question => {
+            const docRef = doc(quizCollection);
+            batch.set(docRef, question);
+        });
+        return from(batch.commit());
+    }
+
+    deleteQuestion(question: any): Observable<any> {
+        const quizCollection = collection(this.firestore, 'quizbank');
+        const q = query(quizCollection, where('question', '==', question.question));
+        return from(getDocs(q)).pipe(
+            switchMap(snapshot => {
+                const batch = writeBatch(this.firestore);
+                snapshot.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+                return from(batch.commit());
+            })
+        );
     }
 
     submitQuiz(answers: any[]): Observable<any> {
