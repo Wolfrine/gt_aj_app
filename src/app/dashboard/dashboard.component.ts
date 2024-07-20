@@ -27,7 +27,7 @@ export class DashboardComponent implements OnInit {
         { "title": "Manage Syllabus", "imageUrl": "./assets/manage-syllabus.png", "route": "/manage-syllabus", "access": "admin" },
         { "title": "Manage Users", "imageUrl": "./assets/manage-users.webp", "route": "/manage-users", "access": "admin" },
         { "title": "Take Quiz", "imageUrl": "./assets/manage-users.webp", "route": "/quiz/basic-quiz" },
-        { "title": "Manage Questionbank", "imageUrl": "./assets/manage-users.webp", "route": "/quiz/manage-quiz-databank" },
+        { "title": "Manage Questionbank", "imageUrl": "./assets/manage-users.webp", "route": "/quiz/view-quiz-databank" },
         { "title": "Add news", "imageUrl": "./assets/manage-syllabus.png", "route": "/add-news" },
     ];
 

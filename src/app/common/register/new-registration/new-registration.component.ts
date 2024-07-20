@@ -34,8 +34,8 @@ import { CustomizationService } from '../../../customization.service';
 export class NewRegistrationComponent implements OnInit {
     registrationForm: FormGroup;
     standards: any[] = [];
-    boards: string[] = [];
-    subjects: string[] = [];
+    boards: { id: string, name: string }[] = [];
+    subjects: { id: string, name: string }[] = [];
 
     private registrationService = inject(RegistrationService);
     private notificationService = inject(NotificationService);
@@ -103,7 +103,7 @@ export class NewRegistrationComponent implements OnInit {
     }
 
     fetchSubjects(standardId: string, boardName: string) {
-        this.syllabusService.getSubjectsByStandardAndBoard(standardId, boardName).subscribe((subjects) => {
+        this.syllabusService.getSubjectsByStandardAndBoard(standardId).subscribe((subjects) => {
             this.subjects = subjects;
         });
     }

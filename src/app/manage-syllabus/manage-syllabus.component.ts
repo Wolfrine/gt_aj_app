@@ -61,8 +61,8 @@ export class ManageSyllabusComponent implements OnInit {
         node => node.children
     );
 
-    boards: string[] = [];
-    standards: string[] = [];
+    boards: { id: string, name: string }[] = [];
+    standards: { id: string, name: string }[] = [];
 
     dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
 
@@ -78,7 +78,7 @@ export class ManageSyllabusComponent implements OnInit {
         });
 
         this.syllabusService.getAllStandards().subscribe(data => {
-            this.standards = data.map(x => x.name);
+            this.standards = data;
         });
     }
 

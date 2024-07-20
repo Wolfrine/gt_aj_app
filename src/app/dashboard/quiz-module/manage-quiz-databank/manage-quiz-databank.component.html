@@ -7,25 +7,26 @@
             <mat-form-field>
                 <mat-label>Board</mat-label>
                 <mat-select formControlName="board" (selectionChange)="loadStandards()">
-                    <mat-option *ngFor="let board of boards" [value]="board">{{ board }}</mat-option>
+                    <mat-option *ngFor="let board of boards" [value]="board.id">{{ board.name }}</mat-option>
                 </mat-select>
             </mat-form-field>
             <mat-form-field>
                 <mat-label>Standard</mat-label>
                 <mat-select formControlName="standard" (selectionChange)="loadSubjects()">
-                    <mat-option *ngFor="let standard of standards" [value]="standard">{{ standard }}</mat-option>
+                    <mat-option *ngFor="let standard of standards" [value]="standard.id">{{ standard.name
+                        }}</mat-option>
                 </mat-select>
             </mat-form-field>
             <mat-form-field>
                 <mat-label>Subject</mat-label>
                 <mat-select formControlName="subject" (selectionChange)="loadChapters()">
-                    <mat-option *ngFor="let subject of subjects" [value]="subject">{{ subject }}</mat-option>
+                    <mat-option *ngFor="let subject of subjects" [value]="subject.id">{{ subject.name }}</mat-option>
                 </mat-select>
             </mat-form-field>
             <mat-form-field>
                 <mat-label>Chapter</mat-label>
                 <mat-select formControlName="chapter">
-                    <mat-option *ngFor="let chapter of chapters" [value]="chapter">{{ chapter }}</mat-option>
+                    <mat-option *ngFor="let chapter of chapters" [value]="chapter.id">{{ chapter.name }}</mat-option>
                 </mat-select>
             </mat-form-field>
             <mat-form-field>
@@ -47,6 +48,15 @@
             <mat-form-field>
                 <mat-label>Option 4</mat-label>
                 <input matInput formControlName="option4" />
+            </mat-form-field>
+            <mat-form-field>
+                <mat-label>Correct Option</mat-label>
+                <mat-select formControlName="correctOption">
+                    <mat-option value="option1">Option 1</mat-option>
+                    <mat-option value="option2">Option 2</mat-option>
+                    <mat-option value="option3">Option 3</mat-option>
+                    <mat-option value="option4">Option 4</mat-option>
+                </mat-select>
             </mat-form-field>
             <button mat-raised-button color="primary" type="submit" [disabled]="questionForm.invalid">Add
                 Question</button>

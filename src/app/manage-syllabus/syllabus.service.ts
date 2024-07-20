@@ -10,11 +10,11 @@ import { SyllabusNode } from './syllabus.interface';
 export class SyllabusService {
     constructor(private firestore: Firestore) { }
 
-    getDistinctBoards(): Observable<string[]> {
+    getDistinctBoards(): Observable<{ id: string, name: string }[]> {
         const boardsCollection = collection(this.firestore, 'syllabus/masters/boards');
         return from(getDocs(boardsCollection)).pipe(
             map((snapshot) => {
-                return snapshot.docs.map(doc => doc.data()['name']);
+                return snapshot.docs.map(doc => ({ id: doc.id, name: doc.data()['name'] }));
             })
         );
     }
@@ -28,39 +28,40 @@ export class SyllabusService {
         );
     }
 
-    getStandardsByBoard(boardId: string): Observable<string[]> {
+    getStandardsByBoard(boardId: string): Observable<{ id: string, name: string }[]> {
         const standardsCollection = collection(this.firestore, 'syllabus/masters/standards');
         return from(getDocs(standardsCollection)).pipe(
             map((snapshot) => {
                 const standards = snapshot.docs
                     .filter(doc => doc.data()['boardId'] === boardId)
-                    .map(doc => doc.data()['name']);
+                    .map(doc => ({ id: doc.id, name: doc.data()['name'] }));
                 return standards;
             })
         );
     }
 
-    getSubjectsByStandardAndBoard(standardId: string, boardId: string): Observable<string[]> {
+    getSubjectsByStandardAndBoard(standardId: string): Observable<{ id: string, name: string }[]> {
         const subjectsCollection = collection(this.firestore, 'syllabus/masters/subjects');
         return from(getDocs(subjectsCollection)).pipe(
             map((snapshot) => {
                 return snapshot.docs
                     .filter(doc => doc.data()['standardId'] === standardId)
-                    .map(doc => doc.data()['name']);
+                    .map(doc => ({ id: doc.id, name: doc.data()['name'] }));
             })
         );
     }
 
-    getChaptersByStandardBoardAndSubject(standardId: string, boardId: string, subjectId: string): Observable<SyllabusNode[]> {
+    getChaptersByStandardBoardAndSubject(subjectId: string): Observable<{ id: string, name: string }[]> {
         const chaptersCollection = collection(this.firestore, 'syllabus/masters/chapters');
         return from(getDocs(chaptersCollection)).pipe(
             map((snapshot) => {
                 return snapshot.docs
                     .filter(doc => doc.data()['subjectId'] === subjectId)
-                    .map(doc => ({ id: doc.id, name: doc.data()['name'] }) as SyllabusNode);
+                    .map(doc => ({ id: doc.id, name: doc.data()['name'] }));
             })
         );
     }
+
 
     getCompleteSyllabusHierarchy(): Observable<SyllabusNode[]> {
         const syllabusMappingsCollection = collection(this.firestore, 'syllabus/syllabus-mapping/mappings');

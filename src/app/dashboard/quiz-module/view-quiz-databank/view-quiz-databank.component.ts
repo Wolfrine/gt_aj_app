@@ -3,13 +3,14 @@ import { Router } from '@angular/router';
 import { QuizService } from '../quiz.service';
 import { SyllabusService } from '../../../manage-syllabus/syllabus.service';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import * as ExcelJS from 'exceljs';
+import { BaseComponent } from '../quiz-base.component';
 
 @Component({
     selector: 'app-view-quiz-databank',
@@ -27,64 +28,20 @@ import * as ExcelJS from 'exceljs';
     templateUrl: './view-quiz-databank.component.html',
     styleUrls: ['./view-quiz-databank.component.scss'],
 })
-export class ViewQuizDatabankComponent implements OnInit {
-    boards: string[] = [];
-    standards: string[] = [];
-    subjects: string[] = [];
-    chapters: string[] = [];
-    selectedBoard: string = '';
-    selectedStandard: string = '';
-    selectedSubject: string = '';
-    selectedChapter: string = '';
-    questions: any[] = [];
+export class ViewQuizDatabankComponent extends BaseComponent implements OnInit {
     displayedColumns: string[] = ['question', 'options'];
 
     constructor(
         private router: Router,
-        private quizService: QuizService,
-        private syllabusService: SyllabusService
-    ) { }
+        fb: FormBuilder,
+        quizService: QuizService,
+        syllabusService: SyllabusService
+    ) {
+        super(fb, quizService, syllabusService);
+    }
 
     ngOnInit(): void {
         this.loadBoards();
-    }
-
-    loadBoards(): void {
-        this.syllabusService.getDistinctBoards().subscribe((boards) => {
-            this.boards = boards;
-        });
-    }
-
-    loadStandards(): void {
-        if (this.selectedBoard) {
-            this.syllabusService.getStandardsByBoard(this.selectedBoard).subscribe((standards) => {
-                this.standards = standards;
-            });
-        }
-    }
-
-    loadSubjects(): void {
-        if (this.selectedBoard && this.selectedStandard) {
-            const standardId = `${this.selectedStandard}_${this.selectedBoard}`;
-            this.syllabusService.getSubjectsByStandardAndBoard(standardId, this.selectedBoard).subscribe((subjects) => {
-                this.subjects = subjects;
-            });
-        }
-    }
-
-    loadChapters(): void {
-        if (this.selectedBoard && this.selectedStandard && this.selectedSubject) {
-            const subjectId = `${this.selectedSubject}_${this.selectedStandard}_${this.selectedBoard}`;
-            this.syllabusService.getChaptersByStandardBoardAndSubject(this.selectedStandard, this.selectedBoard, subjectId).subscribe((chapters) => {
-                this.chapters = chapters.map(chapter => chapter.name);
-            });
-        }
-    }
-
-    loadQuestions(): void {
-        this.quizService.getQuestionsByChapter(this.selectedBoard, this.selectedStandard, this.selectedSubject, this.selectedChapter).subscribe((questions) => {
-            this.questions = questions;
-        });
     }
 
     onFileChange(event: any): void {
@@ -126,6 +83,6 @@ export class ViewQuizDatabankComponent implements OnInit {
     }
 
     navigateToAddQuestion(): void {
-        this.router.navigate(['/manage-quiz-databank']);
+        this.router.navigate(['/quiz/manage-quiz-databank']);
     }
 }

@@ -18,6 +18,7 @@ import { ManageUsersComponent } from './common/register/manage-users/manage-user
 import { MarkdownComponent } from './common/markdown/markdown.component';
 import { BasicQuizComponent } from './dashboard/quiz-module/basic-quiz/basic-quiz.component';
 import { ManageQuizDatabankComponent } from './dashboard/quiz-module/manage-quiz-databank/manage-quiz-databank.component';
+import { ViewQuizDatabankComponent } from './dashboard/quiz-module/view-quiz-databank/view-quiz-databank.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/home', pathMatch: 'full' },
@@ -34,6 +35,8 @@ export const routes: Routes = [
     { path: 'manage-users', component: ManageUsersComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRoles: ['admin'] } },
     { path: 'quiz/basic-quiz', component: BasicQuizComponent },
     { path: 'quiz/manage-quiz-databank', component: ManageQuizDatabankComponent },
+    { path: 'quiz/view-quiz-databank', component: ViewQuizDatabankComponent },
+
     { path: 'documentation', component: MarkdownComponent },
 
     { path: '**', component: Error404Component }

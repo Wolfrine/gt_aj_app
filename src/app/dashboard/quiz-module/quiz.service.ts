@@ -2,16 +2,17 @@ import { Injectable } from '@angular/core';
 import { Firestore, collection, collectionData, addDoc, doc, setDoc, deleteDoc, query, where, getDocs, writeBatch } from '@angular/fire/firestore';
 import { Observable, from, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
+import { SyllabusService } from '../../manage-syllabus/syllabus.service';
 
 @Injectable({
     providedIn: 'root',
 })
 export class QuizService {
-    constructor(private firestore: Firestore) { }
+    constructor(private firestore: Firestore, private syllabusService: SyllabusService) { }
 
-    getQuestionsByChapter(boardId: string, standardId: string, subjectId: string, chapterId: string): Observable<any[]> {
+    getQuestionsByChapter(chapterId: string): Observable<any[]> {
         const quizCollection = collection(this.firestore, 'quizbank');
-        const q = query(quizCollection, where('boardId', '==', boardId), where('standardId', '==', standardId), where('subjectId', '==', subjectId), where('chapterId', '==', chapterId));
+        const q = query(quizCollection, where('chapterId', '==', chapterId));
         return from(getDocs(q)).pipe(
             map(snapshot => snapshot.docs.map(doc => doc.data()))
         );
@@ -50,5 +51,22 @@ export class QuizService {
         // Replace with actual API call to submit quiz answers
         console.log('Submitting quiz answers:', answers);
         return of({ success: true });
+    }
+
+    // Common methods for loading syllabus data
+    loadBoards(): Observable<{ id: string, name: string }[]> {
+        return this.syllabusService.getDistinctBoards();
+    }
+
+    loadStandards(boardId: string): Observable<{ id: string, name: string }[]> {
+        return this.syllabusService.getStandardsByBoard(boardId);
+    }
+
+    loadSubjects(standardId: string): Observable<{ id: string, name: string }[]> {
+        return this.syllabusService.getSubjectsByStandardAndBoard(standardId);
+    }
+
+    loadChapters(subjectId: string): Observable<any[]> {
+        return this.syllabusService.getChaptersByStandardBoardAndSubject(subjectId);
     }
 }
