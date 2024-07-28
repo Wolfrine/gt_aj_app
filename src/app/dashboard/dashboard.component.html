@@ -1,20 +1,25 @@
 <div class="container">
-    <div *ngIf="user$ | async as user;">
-        <h1>Welcome, {{ user.displayName }}</h1>
+    <div *ngIf="user$ | async as user">
+        <h1 class="welcome">Welcome, {{ user.displayName }}</h1>
         <!-- Add more user details as needed -->
+
+        <!-- Icons -->
+        <div class="action-icons">
+            <ng-container *ngFor="let action of actionlist">
+                <div class="action" *ngIf="!action.access || action.access === user.role">
+                    <a [routerLink]="action.route">
+                        <div class="icon">
+                            <img [src]="action.imageUrl" *ngIf="action.imageUrl" class="icon-image">
+                        </div>
+                        {{action.title}}
+                    </a>
+                </div>
+            </ng-container>
+        </div>
     </div>
 
-
-    <!-- Icons -->
-    <div class="action-icons">
-        <div class="action" *ngFor="let action of actionlist">
-            <a [routerLink]="action.route">
-                <div class="icon">
-                    <img mat-card-image [src]="action.imageUrl" *ngIf="action.imageUrl" class="icon-image">
-                </div>
-                {{action.title}}
-            </a>
-        </div>
+    <div *ngIf="!(user$ | async)">
+        <h1>Please log in to see the actions.</h1>
     </div>
 </div>
 

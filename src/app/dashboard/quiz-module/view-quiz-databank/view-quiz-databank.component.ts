@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { QuizService } from '../quiz.service';
 import { SyllabusService } from '../../../manage-syllabus/syllabus.service';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
@@ -41,7 +41,17 @@ export class ViewQuizDatabankComponent extends BaseComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.initializeForm(); // Initialize the form here
         this.loadBoards();
+    }
+
+    override initializeForm(): void {
+        this.questionForm = this.fb.group({
+            board: ['', Validators.required],
+            standard: ['', Validators.required],
+            subject: ['', Validators.required],
+            chapter: ['', Validators.required]
+        });
     }
 
     onFileChange(event: any): void {
@@ -75,7 +85,27 @@ export class ViewQuizDatabankComponent extends BaseComponent implements OnInit {
                 jsonData.push(rowData);
             });
 
-            this.quizService.uploadQuestions(jsonData).subscribe(() => {
+            const selectedBoardId = this.questionForm.value.board;
+            const selectedStandardId = this.questionForm.value.standard;
+            const selectedSubjectId = this.questionForm.value.subject;
+            const selectedChapterId = this.questionForm.value.chapter;
+
+            const formattedData = jsonData.map(row => ({
+                boardId: selectedBoardId,
+                standardId: selectedStandardId,
+                subjectId: selectedSubjectId,
+                chapterId: selectedChapterId,
+                question: row['Question'],
+                options: [
+                    row['Option1'],
+                    row['Option2'],
+                    row['Option3'],
+                    row['Option4'],
+                ],
+                correctOption: row['CorrectOption']
+            }));
+
+            this.quizService.uploadQuestions(formattedData).subscribe(() => {
                 this.loadQuestions();
             });
         };
@@ -84,5 +114,12 @@ export class ViewQuizDatabankComponent extends BaseComponent implements OnInit {
 
     navigateToAddQuestion(): void {
         this.router.navigate(['/quiz/manage-quiz-databank']);
+    }
+
+    downloadTemplate(): void {
+        const link = document.createElement('a');
+        link.href = 'assets/quiz_template.xlsx';
+        link.download = 'quiz_template.xlsx';
+        link.click();
     }
 }

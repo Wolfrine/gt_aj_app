@@ -31,7 +31,8 @@
             </mat-form-field>
         </form>
         <button mat-raised-button color="primary" (click)="navigateToAddQuestion()">Add Question</button>
-        <input type="file" (change)="onFileChange($event)" />
+        <input type="file" (change)="onFileChange($event)" [disabled]="!questionForm.valid" />
+        <button mat-raised-button color="primary" (click)="downloadTemplate()">Download Template</button>
         <table mat-table [dataSource]="questions" class="mat-elevation-z8">
             <ng-container matColumnDef="question">
                 <th mat-header-cell *matHeaderCellDef> Question </th>

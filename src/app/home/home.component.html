@@ -18,7 +18,8 @@
                 <div [innerHTML]="about" class="news-content"></div>
 
                 <div>
-                    <button mat-flat-button color="primary" (click)="router.navigate(['/register'])">Enroll now</button>
+                    <button mat-flat-button color="primary" (click)="router.navigate(['/register'])"
+                        *ngIf="singInDashboard">Enroll now</button>
                     <button mat-stroked-button (click)="openSignIn()">
                         {{ singInDashboard ? "Sign In" : "Go to Dashboard"}}
                     </button>
