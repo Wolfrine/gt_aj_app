@@ -1,0 +1,90 @@
+<div class="padded-container">
+    <h1>Add New Activity</h1>
+    <hr>
+
+    <p>Add your activity done today: "{{ currentDate.toDateString() }}"</p>
+
+    <form [formGroup]="activityForm" (ngSubmit)="onSubmit()">
+        <!-- Student dropdown (visible for admins only) -->
+        <div *ngIf="currentUserRole === 'admin'">
+            <mat-form-field appearance="fill" class="full-width">
+                <mat-label>Select Student</mat-label>
+                <mat-select formControlName="selectedStudent" required>
+                    <mat-option *ngFor="let student of students" [value]="student.email">
+                        {{ student.name }} ({{ student.email }})
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+
+        <!-- Board -->
+        <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Board</mat-label>
+            <mat-select formControlName="board" required>
+                <mat-option *ngFor="let board of boards" [value]="board.id">{{ board.name }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <!-- Standard -->
+        <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Standard</mat-label>
+            <mat-select formControlName="standard" required>
+                <mat-option *ngFor="let standard of standards" [value]="standard.id">{{ standard.name }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <!-- Subject -->
+        <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Subject</mat-label>
+            <mat-select formControlName="subject" required>
+                <mat-option *ngFor="let subject of subjects" [value]="subject.id">{{ subject.name }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <!-- Activity Type -->
+        <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Activity Type</mat-label>
+            <mat-select formControlName="activityType" required>
+                <mat-option value="study">Study</mat-option>
+                <mat-option value="practice">Practice</mat-option>
+                <mat-option value="revision">Revision</mat-option>
+                <mat-option value="test">Test</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <!-- Remarks -->
+        <mat-form-field appearance="fill" class="full-width">
+            <mat-label>Remarks</mat-label>
+            <textarea matInput formControlName="remarks" placeholder="Specify Chapter > Topic (if required)"></textarea>
+        </mat-form-field>
+
+        <!-- Submit Button -->
+        <div class="button-container">
+            <button mat-raised-button color="primary" type="submit">Submit Activity</button>
+        </div>
+    </form>
+
+    <br><br><br>
+
+    <h1>Previous Activities logged</h1>
+    <hr>
+
+    <!-- Display the previous activities -->
+    <div *ngIf="activities.length > 0">
+        <ul>
+            <li *ngFor="let activity of activities">
+                <div *ngIf="currentUserRole === 'admin'"><strong>Activity By:</strong> {{ activity.selectedStudent?
+                    activity.selectedStudent : activity.created_by }}</div>
+                <strong>Subject:</strong> {{ activity.subject }} <br>
+                <strong>Activity Type:</strong> {{ activity.activityType }} <br>
+                <strong>Remarks:</strong> {{ activity.remarks }} <br>
+                <strong>Date:</strong> {{ activity.created_at | date:'fullDate' }} - {{ activity.created_at |
+                date:'shortTime' }}<br>
+                <hr>
+            </li>
+        </ul>
+    </div>
+    <div *ngIf="activities.length === 0">
+        <p>No previous activities found.</p>
+    </div>
+</div>

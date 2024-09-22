@@ -2,7 +2,7 @@
     <h1>Manage Syllabus</h1>
 
     <mat-tab-group>
-        <mat-tab label="Boards">
+        <!-- <mat-tab label="Boards">
             <h3>Manage the applicable boards</h3>
             <pre>{{boards}}</pre>
             <div *ngIf="boards.length > 0">
@@ -23,7 +23,7 @@
                     </mat-checkbox>
                 </div>
             </div>
-        </mat-tab>
+        </mat-tab> -->
         <mat-tab label="Complete Syllabus">
             <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
                 <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>

@@ -18,11 +18,12 @@ export class DashboardComponent implements OnInit {
     user$!: Observable<UserWithRole | null>;
 
     actionlist = [
-        { "title": "Manage Syllabus", "imageUrl": "./assets/manage-syllabus.png", "route": "/manage-syllabus", "access": "admin" },
-        { "title": "Manage Users", "imageUrl": "./assets/manage-users.webp", "route": "/manage-users", "access": "admin" },
-        { "title": "Take Quiz", "imageUrl": "./assets/manage-users.webp", "route": "/quiz/basic-quiz", "access": "admin" },
-        { "title": "Manage Questionbank", "imageUrl": "./assets/manage-users.webp", "route": "/quiz/view-quiz-databank", "access": "admin" },
-        { "title": "Add news", "imageUrl": "./assets/manage-syllabus.png", "route": "/add-news" },
+        { "title": "Add Activity", "imageUrl": "./assets/activities.png", "color": "rgb(245,245,220)", "route": "/add-activity" },
+        { "title": "Manage Syllabus", "imageUrl": "./assets/manage-syllabus.png", "color": "rgb(245,220,245)", "route": "/manage-syllabus", "access": "admin" },
+        { "title": "Manage Users", "imageUrl": "./assets/manage-users.png", "color": "rgb(220,245,245)", "route": "/manage-users", "access": "admin" },
+        { "title": "Take Quiz", "imageUrl": "./assets/quiz.png", "color": "rgb(235,255,225)", "route": "/quiz/basic-quiz" },
+        { "title": "Manage Questionbank", "imageUrl": "./assets/manage-users.webp", "color": "rgb(225,230,245)", "route": "/quiz/view-quiz-databank", "access": "admin" },
+        { "title": "Add news", "imageUrl": "./assets/manage-syllabus.png", "color": "rgb(245,220,245)", "route": "/add-news", "access": "admin" },
     ];
 
     constructor(

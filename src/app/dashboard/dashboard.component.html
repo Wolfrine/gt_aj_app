@@ -6,7 +6,8 @@
         <!-- Icons -->
         <div class="action-icons">
             <ng-container *ngFor="let action of actionlist">
-                <div class="action" *ngIf="!action.access || action.access === user.role">
+                <div class="action" *ngIf="!action.access || action.access === user.role"
+                    [style.background-color]="action.color">
                     <a [routerLink]="action.route">
                         <div class="icon">
                             <img [src]="action.imageUrl" *ngIf="action.imageUrl" class="icon-image">

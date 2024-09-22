@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Auth, signInWithPopup, GoogleAuthProvider, signOut, UserCredential, User as FirebaseUser } from '@angular/fire/auth';
-import { Firestore, doc, getDoc, DocumentData } from '@angular/fire/firestore';
+import { Firestore, doc, getDoc, DocumentData, collection, query, where, collectionData } from '@angular/fire/firestore';
 import { authState } from 'rxfire/auth';
 import { Observable, of, from, BehaviorSubject } from 'rxjs';
 import { switchMap, map, take } from 'rxjs/operators';
@@ -119,5 +119,12 @@ export class AuthService {
 
     setLoginNotificationShown(value: boolean): void {
         this.loginNotificationShown.next(value);
+    }
+
+    getStudents(subdomain: string): Observable<any[]> {
+        const usersCollection = collection(this.firestore, `institutes/${subdomain}/users`);
+        const studentsQuery = query(usersCollection, where('role', '==', 'student'));
+
+        return collectionData(studentsQuery);
     }
 }

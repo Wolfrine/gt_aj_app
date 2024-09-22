@@ -19,6 +19,7 @@ import { MarkdownComponent } from './common/markdown/markdown.component';
 import { BasicQuizComponent } from './dashboard/quiz-module/basic-quiz/basic-quiz.component';
 import { ManageQuizDatabankComponent } from './dashboard/quiz-module/manage-quiz-databank/manage-quiz-databank.component';
 import { ViewQuizDatabankComponent } from './dashboard/quiz-module/view-quiz-databank/view-quiz-databank.component';
+import { AddActivityComponent } from './dashboard/add-activity/add-activity.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/home', pathMatch: 'full' },
@@ -36,7 +37,7 @@ export const routes: Routes = [
     { path: 'quiz/basic-quiz', component: BasicQuizComponent },
     { path: 'quiz/manage-quiz-databank', component: ManageQuizDatabankComponent },
     { path: 'quiz/view-quiz-databank', component: ViewQuizDatabankComponent },
-
+    { path: 'add-activity', component: AddActivityComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRoles: ['teacher', 'student', 'admin'] } },
     { path: 'documentation', component: MarkdownComponent },
 
     { path: '**', component: Error404Component }
