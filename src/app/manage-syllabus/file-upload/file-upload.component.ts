@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { SyllabusService } from '../syllabus.service';
 import * as ExcelJS from 'exceljs';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
     selector: 'app-file-upload',
@@ -10,7 +11,11 @@ import * as ExcelJS from 'exceljs';
 })
 export class FileUploadComponent {
 
-    constructor(private syllabusService: SyllabusService) { }
+    constructor(private syllabusService: SyllabusService, private _snackBar: MatSnackBar) { }
+
+    openSnackBar(message: string, action: string) {
+        this._snackBar.open(message, action);
+    }
 
     onFileChange(event: any) {
         const file = event.target.files[0];
@@ -49,6 +54,14 @@ export class FileUploadComponent {
     }
 
     async processData(data: any) {
+        // Step 1: Clear existing data in the masters and syllabus-mapping collections
+        await this.syllabusService.clearCollection('syllabus/masters/boards');
+        await this.syllabusService.clearCollection('syllabus/masters/standards');
+        await this.syllabusService.clearCollection('syllabus/masters/subjects');
+        await this.syllabusService.clearCollection('syllabus/masters/chapters');
+        await this.syllabusService.clearCollection('syllabus/syllabus-mapping/mappings');
+
+        // Step 2: Prepare new data from the Excel file for uploading
         const boards: { [key: string]: any } = {};
         const standards: { [key: string]: any } = {};
         const subjects: { [key: string]: any } = {};
@@ -111,5 +124,7 @@ export class FileUploadComponent {
         await this.syllabusService.uploadToFirestore(subjects, 'subjects');
         await this.syllabusService.uploadToFirestore(chapters, 'chapters');
         await this.syllabusService.uploadSyllabusToFirestore(syllabus);
+
+        this.openSnackBar('Syllabus updated successfully', '');
     }
 }

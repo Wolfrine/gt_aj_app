@@ -10,18 +10,27 @@
     </mat-form-field>
     <mat-form-field appearance="fill">
         <mat-label>Phone</mat-label>
-        <input matInput formControlName="phone" type="text" required />
+        <input matInput formControlName="phone" type="text" required maxlength="10" pattern="[0-9]*" minlength="10" />
     </mat-form-field>
 
     <h2>Registering as</h2>
-    <mat-radio-group formControlName="role">
+    <mat-radio-group formControlName="role" (change)="onRoleChange()">
         <mat-radio-button value="student">Student</mat-radio-button>
         <mat-radio-button value="teacher">Teacher</mat-radio-button>
         <mat-radio-button value="parent">Parent</mat-radio-button>
     </mat-radio-group>
 
+    <!-- Student Section -->
     <div *ngIf="registrationForm.get('role')?.value === 'student'">
-        <h2>Registration Area</h2>
+        <h2>Student Registration</h2>
+        <mat-form-field appearance="fill">
+            <mat-label>Board</mat-label>
+            <mat-select formControlName="board" required>
+                <mat-option *ngFor="let board of boards" [value]="board.id">
+                    {{ board.name }}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
         <mat-form-field appearance="fill">
             <mat-label>Standard</mat-label>
             <mat-select formControlName="standard" required>
@@ -30,18 +39,19 @@
                 </mat-option>
             </mat-select>
         </mat-form-field>
+    </div>
+
+    <!-- Teacher Section -->
+    <div *ngIf="registrationForm.get('role')?.value === 'teacher'">
+        <h2>Teacher Registration</h2>
         <mat-form-field appearance="fill">
-            <mat-label>Board</mat-label>
-            <mat-select formControlName="board" required>
-                <mat-option *ngFor="let board of boards" [value]="board">
-                    {{ board }}
+            <mat-label>Boards</mat-label>
+            <mat-select formControlName="boards" multiple required>
+                <mat-option *ngFor="let board of boards" [value]="board.id">
+                    {{ board.name }}
                 </mat-option>
             </mat-select>
         </mat-form-field>
-    </div>
-
-    <div *ngIf="registrationForm.get('role')?.value === 'teacher'">
-        <h2>Registration Area</h2>
         <mat-form-field appearance="fill">
             <mat-label>Standards</mat-label>
             <mat-select formControlName="standards" multiple required>
@@ -51,25 +61,18 @@
             </mat-select>
         </mat-form-field>
         <mat-form-field appearance="fill">
-            <mat-label>Boards</mat-label>
-            <mat-select formControlName="boards" multiple required>
-                <mat-option *ngFor="let board of boards" [value]="board">
-                    {{ board }}
-                </mat-option>
-            </mat-select>
-        </mat-form-field>
-        <mat-form-field appearance="fill">
             <mat-label>Subjects</mat-label>
             <mat-select formControlName="subjects" multiple required>
-                <mat-option *ngFor="let subject of subjects" [value]="subject">
-                    {{ subject }}
+                <mat-option *ngFor="let subject of subjects" [value]="subject.id">
+                    {{ subject.name }}
                 </mat-option>
             </mat-select>
         </mat-form-field>
     </div>
 
+    <!-- Parent Section -->
     <div *ngIf="registrationForm.get('role')?.value === 'parent'">
-        <h2>Registration Area</h2>
+        <h2>Parent Registration</h2>
         <mat-form-field appearance="fill">
             <mat-label>Child Email ID</mat-label>
             <input matInput formControlName="childEmail" type="email" required />

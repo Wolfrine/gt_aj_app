@@ -33,7 +33,7 @@ import { CustomizationService } from '../../../customization.service';
 })
 export class NewRegistrationComponent implements OnInit {
     registrationForm: FormGroup;
-    standards: any[] = [];
+    standards: { id: string, name: string }[] = [];
     boards: { id: string, name: string }[] = [];
     subjects: { id: string, name: string }[] = [];
 
@@ -52,8 +52,8 @@ export class NewRegistrationComponent implements OnInit {
             phone: ['', Validators.required],
             institute: ['', Validators.required],
             role: ['', Validators.required],
-            standard: [''],
             board: [''],
+            standard: [''],
             standards: [[]],
             boards: [[]],
             subjects: [[]],
@@ -62,9 +62,9 @@ export class NewRegistrationComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.registrationForm.patchValue({ institute: this.customizationService.getSubdomainFromUrl() });
 
-        this.registrationForm.patchValue({ institute: this.customizationService.getSubdomainFromUrl() })
-
+        // Get logged-in user's name and email
         this.authService.user$.subscribe(async (user) => {
             if (user) {
                 this.registrationForm.patchValue({
@@ -74,67 +74,72 @@ export class NewRegistrationComponent implements OnInit {
             }
         });
 
-        this.syllabusService.getAllStandards().subscribe((standards) => {
-            this.standards = standards;
-        });
-
+        // Fetch boards and standards on initialization
         this.syllabusService.getDistinctBoards().subscribe((boards) => {
             this.boards = boards;
         });
 
-        this.registrationForm.get('standard')?.valueChanges.subscribe((standardId) => {
-            const board = this.registrationForm.get('board')?.value;
-            if (standardId && board) {
-                this.fetchSubjects(standardId, board);
-            }
-        });
-
-        this.registrationForm.get('board')?.valueChanges.subscribe((board) => {
-            const standardId = this.registrationForm.get('standard')?.value;
-            if (standardId && board) {
-                this.fetchSubjects(standardId, board);
-            }
-        });
-
-        this.registrationForm.statusChanges.subscribe(status => {
-            console.log('Form Status: ', status);
-            this.logFormControlsStatus();
+        this.registrationForm.get('board')?.valueChanges.subscribe((boardId) => {
+            this.fetchStandards(boardId);
         });
     }
 
-    fetchSubjects(standardId: string, boardName: string) {
-        this.syllabusService.getSubjectsByStandardAndBoard(standardId).subscribe((subjects) => {
-            this.subjects = subjects;
+    fetchStandards(boardId: string) {
+        this.syllabusService.getStandardsByBoard(boardId).subscribe((standards) => {
+            this.standards = standards;
+            // Reset standard when board changes
+            this.registrationForm.patchValue({ standard: '' });
         });
+    }
+
+    onRoleChange() {
+        const role = this.registrationForm.get('role')?.value;
+
+        // Clear specific fields based on the role
+        if (role === 'student') {
+            this.registrationForm.patchValue({ standards: [], subjects: [], childEmail: '' });
+        } else if (role === 'teacher') {
+            this.registrationForm.patchValue({ board: '', standard: '', childEmail: '' });
+        } else if (role === 'parent') {
+            this.registrationForm.patchValue({ board: '', standard: '', standards: [], boards: [], subjects: [] });
+        }
+
+        // Reset form validators dynamically
+        this.setConditionalValidators(role);
     }
 
     setConditionalValidators(role: string) {
-        const standardControl = this.registrationForm.get('standard');
         const boardControl = this.registrationForm.get('board');
+        const standardControl = this.registrationForm.get('standard');
         const standardsControl = this.registrationForm.get('standards');
         const boardsControl = this.registrationForm.get('boards');
         const subjectsControl = this.registrationForm.get('subjects');
+        const childEmailControl = this.registrationForm.get('childEmail');
 
-        standardControl?.clearValidators();
         boardControl?.clearValidators();
+        standardControl?.clearValidators();
         standardsControl?.clearValidators();
         boardsControl?.clearValidators();
         subjectsControl?.clearValidators();
+        childEmailControl?.clearValidators();
 
         if (role === 'student') {
-            standardControl?.setValidators(Validators.required);
             boardControl?.setValidators(Validators.required);
+            standardControl?.setValidators(Validators.required);
         } else if (role === 'teacher') {
             standardsControl?.setValidators(Validators.required);
             boardsControl?.setValidators(Validators.required);
             subjectsControl?.setValidators(Validators.required);
+        } else if (role === 'parent') {
+            childEmailControl?.setValidators([Validators.required, Validators.email]);
         }
 
-        standardControl?.updateValueAndValidity();
         boardControl?.updateValueAndValidity();
+        standardControl?.updateValueAndValidity();
         standardsControl?.updateValueAndValidity();
         boardsControl?.updateValueAndValidity();
         subjectsControl?.updateValueAndValidity();
+        childEmailControl?.updateValueAndValidity();
     }
 
     onSubmit() {
@@ -150,12 +155,5 @@ export class NewRegistrationComponent implements OnInit {
                 }
             );
         }
-    }
-
-    private logFormControlsStatus() {
-        Object.keys(this.registrationForm.controls).forEach(key => {
-            const control = this.registrationForm.get(key);
-            console.log(`Control: ${key}, Status: ${control?.status}, Errors: ${control?.errors}`);
-        });
     }
 }

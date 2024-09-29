@@ -172,6 +172,19 @@ export class SyllabusService {
         );
     }
 
+    async clearCollection(collectionPath: string) {
+        const collectionRef = collection(this.firestore, collectionPath);
+        const docsSnapshot = await getDocs(collectionRef);
+        const batch = writeBatch(this.firestore);
+
+        docsSnapshot.forEach((doc) => {
+            const docRef = doc.ref;
+            batch.delete(docRef);
+        });
+
+        await batch.commit();
+    }
+
     async uploadToFirestore(data: any, collectionName: string) {
         const batch = writeBatch(this.firestore);
         for (const key in data) {
