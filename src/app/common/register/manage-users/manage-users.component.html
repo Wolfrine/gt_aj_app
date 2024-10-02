@@ -26,6 +26,7 @@
                     *ngIf="user.status !== 'accepted'">Accept</button>
                 <button mat-button color="warn" (click)="updateUserStatus(user, 'rejected')"
                     *ngIf="user.status !== 'rejected'">Reject</button>
+                <button mat-button color="primary" (click)="updateUserStatus(user, user.status)">Update</button>
             </mat-card-actions>
         </mat-card>
     </div>

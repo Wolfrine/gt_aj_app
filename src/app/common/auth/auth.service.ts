@@ -19,6 +19,7 @@ export interface UserRole extends DocumentData {
 
 export interface UserWithRole extends FirebaseUser {
     role: string;
+    adminMessage?: string;
 }
 
 @Injectable({
@@ -48,7 +49,7 @@ export class AuthService {
                         map(docSnap => {
                             if (docSnap.exists()) {
                                 const userData = docSnap.data() as UserRole;
-                                const userWithRole: UserWithRole = { ...user, role: userData.role };
+                                const userWithRole: UserWithRole = { ...user, role: userData.role, adminMessage: userData['adminMessage'] || null }; // Fetch adminMessage
                                 this.userSubject.next(userWithRole);
                                 return userWithRole;
                             } else {

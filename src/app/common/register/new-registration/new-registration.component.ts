@@ -14,6 +14,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatButtonModule } from '@angular/material/button';
 import { CustomizationService } from '../../../customization.service';
+import { Firestore, doc, getDoc } from '@angular/fire/firestore';
 
 @Component({
     selector: 'app-new-registration',
@@ -36,6 +37,7 @@ export class NewRegistrationComponent implements OnInit {
     standards: { id: string, name: string }[] = [];
     boards: { id: string, name: string }[] = [];
     subjects: { id: string, name: string }[] = [];
+    firestore = inject(Firestore);
 
     private registrationService = inject(RegistrationService);
     private notificationService = inject(NotificationService);
@@ -49,7 +51,7 @@ export class NewRegistrationComponent implements OnInit {
         this.registrationForm = this.fb.group({
             name: ['', Validators.required],
             email: ['', [Validators.required, Validators.email]],
-            phone: ['', Validators.required],
+            phone: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],  // Ensure phone is 10 digits
             institute: ['', Validators.required],
             role: ['', Validators.required],
             board: [''],
@@ -57,20 +59,41 @@ export class NewRegistrationComponent implements OnInit {
             standards: [[]],
             boards: [[]],
             subjects: [[]],
-            childEmail: ['']
+            childEmail: ['', Validators.email]
         });
     }
 
     ngOnInit() {
         this.registrationForm.patchValue({ institute: this.customizationService.getSubdomainFromUrl() });
 
-        // Get logged-in user's name and email
+        // Fetch logged-in user's name, email and pre-fill the form with registration details
         this.authService.user$.subscribe(async (user) => {
             if (user) {
                 this.registrationForm.patchValue({
                     name: user.displayName,
                     email: user.email
                 });
+
+                // Fetch the user's existing registration details from Firestore
+                const userDocRef = doc(this.firestore, `institutes/${this.customizationService.getSubdomainFromUrl()}/users/${user.email}`);
+                const userDoc = await getDoc(userDocRef);
+
+                if (userDoc.exists()) {
+                    const registrationData = userDoc.data();
+                    this.registrationForm.patchValue({
+                        phone: registrationData['phone'],
+                        role: registrationData['role'],
+                        board: registrationData['board'],
+                        standard: registrationData['standard'],
+                        standards: registrationData['standards'] || [],
+                        boards: registrationData['boards'] || [],
+                        subjects: registrationData['subjects'] || [],
+                        childEmail: registrationData['childEmail'] || ''
+                    });
+
+                    // Ensure validators are applied based on the role
+                    this.setConditionalValidators(registrationData['role']);
+                }
             }
         });
 
