@@ -107,6 +107,18 @@ export class AppComponent implements OnInit {
             filter(event => event instanceof NavigationEnd)
         ).subscribe(() => {
             this.viewportScroller.scrollToPosition([0, 0]);
+
+            // Get subdomain
+            let subdomain = '';
+            if (typeof window !== 'undefined') {
+                subdomain = this.customizationService.getSubdomainFromUrl();
+            }
+
+            // Get the route title and set the full page title with subdomain
+            this.route.firstChild?.data.subscribe(data => {
+                const pageTitle = data['title'] || 'Untitled';
+                this.setTitleWithSubdomain(subdomain, pageTitle);
+            });
         });
 
         let subdomain = '';
@@ -122,7 +134,6 @@ export class AppComponent implements OnInit {
                 this.themeColor = data.themeColor;
                 this.header = data.header;
                 this.applyThemeColor();
-                this.setTitleWithSubdomain(subdomain, data.websiteTitle);
                 this.setFavicon(data.faviconUrl);
                 console.log(data.status);
                 if (data.status === 'disabled' || data.status === 'pending') {
@@ -145,6 +156,7 @@ export class AppComponent implements OnInit {
             this.showObservationList = params['obsl'] === '1';
         });
     }
+
 
     // Display navbar in all pages other than /home
     checkhome() {
