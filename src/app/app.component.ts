@@ -113,6 +113,7 @@ export class AppComponent implements OnInit {
         if (typeof window !== 'undefined') {
             subdomain = this.customizationService.getSubdomainFromUrl();
         }
+
         try {
             const data = await this.customizationService.getCustomization(subdomain);
             if (data) {
@@ -121,7 +122,7 @@ export class AppComponent implements OnInit {
                 this.themeColor = data.themeColor;
                 this.header = data.header;
                 this.applyThemeColor();
-                this.setTitle(data.websiteTitle);
+                this.setTitleWithSubdomain(subdomain, data.websiteTitle);
                 this.setFavicon(data.faviconUrl);
                 console.log(data.status);
                 if (data.status === 'disabled' || data.status === 'pending') {
@@ -187,8 +188,11 @@ export class AppComponent implements OnInit {
         document.getElementsByTagName('head')[0].appendChild(link);
     }
 
-    setTitle(newTitle: string) {
-        this.titleService.setTitle(newTitle);
+    // New method to update title with subdomain
+    private setTitleWithSubdomain(subdomain: string, pageTitle: string) {
+        const capitalizedSubdomain = subdomain.charAt(0).toUpperCase() + subdomain.slice(1);
+        const fullTitle = `${capitalizedSubdomain} - ${pageTitle}`;
+        this.titleService.setTitle(fullTitle);
     }
 
     redirectToRegistration(subdomain: string) {
