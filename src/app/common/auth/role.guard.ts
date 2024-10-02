@@ -63,6 +63,7 @@ export class RoleGuard implements CanActivate {
         );
     }
 
+
     private checkUserStatus(role: string): Observable<boolean> {
         const subdomain = this.customizationService.getSubdomainFromUrl();
         return this.authService.getCurrentUser().pipe(

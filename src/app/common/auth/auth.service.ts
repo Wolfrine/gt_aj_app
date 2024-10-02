@@ -8,6 +8,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { CustomizationService } from '../../customization.service';
 import { AuthComponent } from './auth.component';
+import { NgZone } from '@angular/core'; // Import NgZone
 
 export interface UserRole extends DocumentData {
     role: string;
@@ -36,7 +37,8 @@ export class AuthService {
         private firestore: Firestore,
         private dialog: MatDialog,
         private customizationService: CustomizationService,
-        private router: Router
+        private router: Router,
+        private ngZone: NgZone
     ) {
         this.user$ = this.userSubject.asObservable();
 
@@ -88,8 +90,24 @@ export class AuthService {
     }
 
     googleSignIn(): Promise<UserCredential> {
-        return signInWithPopup(this.auth, new GoogleAuthProvider());
+        return signInWithPopup(this.auth, new GoogleAuthProvider()).then(result => {
+            this.ngZone.run(() => {
+                // Close the login dialog inside Angular's zone
+                this.dialog.closeAll();
+
+                // Wait briefly to ensure user data is loaded before redirection
+                setTimeout(() => {
+                    this.handlePostLoginRedirect(); // Redirect after login
+                }, 500); // Delay to allow any asynchronous operations to complete
+
+            });
+            return result; // Return the UserCredential as expected
+        }).catch(error => {
+            console.error("Login failed:", error);
+            throw error; // Rethrow the error to maintain the return type of the function
+        });
     }
+
 
     signOut() {
         this.userSubject.next(null);  // Clear cached role on sign out
@@ -108,9 +126,16 @@ export class AuthService {
 
     handlePostLoginRedirect(): void {
         if (this.redirectUrl) {
-            this.router.navigate([this.redirectUrl]);
+            this.ngZone.run(() => {
+                console.log(`Redirecting to stored URL: ${this.redirectUrl}`);
+                this.router.navigate([this.redirectUrl]);  // Navigate to the previously stored URL
+                this.redirectUrl = null;  // Reset after navigating
+            });
         } else {
-            this.router.navigate(['/dashboard']);
+            this.ngZone.run(() => {
+                console.log('Redirecting to dashboard');
+                this.router.navigate(['/dashboard']);  // Default to dashboard
+            });
         }
     }
 

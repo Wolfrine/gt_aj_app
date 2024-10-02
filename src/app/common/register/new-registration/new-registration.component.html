@@ -42,19 +42,20 @@
     </div>
 
     <!-- Teacher Section -->
+    <!-- Teacher Section -->
     <div *ngIf="registrationForm.get('role')?.value === 'teacher'">
         <h2>Teacher Registration</h2>
         <mat-form-field appearance="fill">
-            <mat-label>Boards</mat-label>
-            <mat-select formControlName="boards" multiple required>
+            <mat-label>Board</mat-label>
+            <mat-select formControlName="board" required> <!-- Change to single select -->
                 <mat-option *ngFor="let board of boards" [value]="board.id">
                     {{ board.name }}
                 </mat-option>
             </mat-select>
         </mat-form-field>
         <mat-form-field appearance="fill">
-            <mat-label>Standards</mat-label>
-            <mat-select formControlName="standards" multiple required>
+            <mat-label>Standard</mat-label>
+            <mat-select formControlName="standard" required>
                 <mat-option *ngFor="let standard of standards" [value]="standard.id">
                     {{ standard.name }}
                 </mat-option>
@@ -69,6 +70,7 @@
             </mat-select>
         </mat-form-field>
     </div>
+
 
     <!-- Parent Section -->
     <div *ngIf="registrationForm.get('role')?.value === 'parent'">

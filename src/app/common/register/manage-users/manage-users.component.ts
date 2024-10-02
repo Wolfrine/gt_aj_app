@@ -56,7 +56,7 @@ export class ManageUsersComponent implements OnInit {
         });
     }
 
-    updateUserStatus(user: User, status: string) {
+    updateUserStatus(user: User, status: string | null) {
         // Open bottom sheet for admin message
         const bottomSheetRef = this.bottomSheet.open(AdminMessageSheet, {
             data: { user, status }
@@ -65,13 +65,20 @@ export class ManageUsersComponent implements OnInit {
         bottomSheetRef.afterDismissed().subscribe(result => {
             if (result?.message) {
                 const userDocRef = doc(this.firestore, `institutes/${this.subdomain}/users/${user.email}`);
-                updateDoc(userDocRef, { status, adminMessage: result.message }).then(() => {
-                    this.snackBar.open(`User ${user.name} status updated to ${status}`, 'Close', {
+                const updateData: any = { adminMessage: result.message };
+
+                // Only include status in the update if it's defined
+                if (status) {
+                    updateData.status = status;
+                }
+
+                updateDoc(userDocRef, updateData).then(() => {
+                    this.snackBar.open(`User ${user.name} ${status ? 'status updated to ' + status : 'admin message updated'}`, 'Close', {
                         duration: 3000,
                     });
                 }).catch(error => {
-                    console.error("Error updating user status: ", error);
-                    this.snackBar.open(`Error updating user status`, 'Close', {
+                    console.error("Error updating user:", error);
+                    this.snackBar.open(`Error updating user`, 'Close', {
                         duration: 3000,
                     });
                 });

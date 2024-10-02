@@ -45,7 +45,7 @@ export class SyllabusService {
         return from(getDocs(subjectsCollection)).pipe(
             map((snapshot) => {
                 return snapshot.docs
-                    .filter(doc => doc.data()['standardId'] === standardId)
+                    .filter(doc => doc.data()['standardId'] === standardId) // Filter by standardId
                     .map(doc => ({ id: doc.id, name: doc.data()['name'] }));
             })
         );
