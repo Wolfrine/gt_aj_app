@@ -15,6 +15,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatButtonModule } from '@angular/material/button';
 import { CustomizationService } from '../../../customization.service';
 import { Firestore, doc, getDoc } from '@angular/fire/firestore';
+import { Logger } from '../../../logger.service'; // Import Logger service
 
 @Component({
     selector: 'app-new-registration',
@@ -46,6 +47,7 @@ export class NewRegistrationComponent implements OnInit {
     private authService = inject(AuthService);
     private syllabusService = inject(SyllabusService);
     private customizationService = inject(CustomizationService);
+    private logger = inject(Logger);  // Inject Logger
 
     constructor() {
         this.registrationForm = this.fb.group({
@@ -74,6 +76,17 @@ export class NewRegistrationComponent implements OnInit {
 
                 // Fetch the user's existing registration details from Firestore
                 const userDocRef = doc(this.firestore, `institutes/${this.customizationService.getSubdomainFromUrl()}/users/${user.email}`);
+
+                // Log Firestore Read Operation
+                this.logger.addLog({
+                    type: 'READ',
+                    module: 'NewRegistrationComponent',
+                    method: 'ngOnInit',
+                    collection: `institutes/${this.customizationService.getSubdomainFromUrl()}/users/${user.email}`,
+                    dataSize: 0,  // Adjust this as per your data structure
+                    timestamp: new Date().toISOString(),
+                });
+
                 const userDoc = await getDoc(userDocRef);
 
                 if (userDoc.exists()) {

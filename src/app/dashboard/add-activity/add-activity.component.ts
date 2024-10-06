@@ -7,10 +7,10 @@ import { CommonModule } from '@angular/common';
 import { SyllabusService } from '../../manage-syllabus/syllabus.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Firestore, doc, setDoc, collection, collectionData, query, where, orderBy, limit } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
-import { CustomizationService } from '../../customization.service';// For getting subdomain from the URL
+import { Observable, take } from 'rxjs';
+import { CustomizationService } from '../../customization.service'; // For getting subdomain from the URL
 import { AuthService } from '../../common/auth/auth.service';
-
+import { Logger } from '../../logger.service'; // Import Logger
 
 @Component({
     selector: 'app-add-activity',
@@ -38,7 +38,6 @@ export class AddActivityComponent implements OnInit {
     selectedStandard: string = '';
     selectedSubject: string = '';
 
-    // Add activities property to store the list of activities
     activities: any[] = [];
     students: any[] | undefined;
     currentUserRole: string | undefined;
@@ -48,7 +47,8 @@ export class AddActivityComponent implements OnInit {
         private firestore: Firestore,
         private syllabusService: SyllabusService,
         private customizationService: CustomizationService,
-        private authService: AuthService  // Inject AuthService
+        private authService: AuthService,
+        private logger: Logger  // Inject Logger
     ) {
         this.activityForm = this.fb.group({
             board: ['', Validators.required],
@@ -59,7 +59,6 @@ export class AddActivityComponent implements OnInit {
             selectedStudent: [''] // Add the selectedStudent control here
         });
     }
-
 
     ngOnInit(): void {
         this.syllabusService.getDistinctBoards().subscribe((boards) => {
@@ -86,11 +85,10 @@ export class AddActivityComponent implements OnInit {
             if (user && user.email) {
                 this.currentUserEmail = user.email;
 
-                // Check if the current user is an admin
-                if (user.role === 'admin') {
+                if (user.role === 'admin' && !this.students) {
                     this.currentUserRole = user.role;
                     const subdomain = this.customizationService.getSubdomainFromUrl();
-                    this.authService.getStudents(subdomain).subscribe((students) => {
+                    this.authService.getStudents(subdomain).pipe(take(1)).subscribe((students) => {
                         this.students = students;
                     });
                 }
@@ -108,79 +106,74 @@ export class AddActivityComponent implements OnInit {
         });
     }
 
-
     async onSubmit() {
         let activityCreatorEmail = this.currentUserEmail;
 
-        // If the user is an admin, use the selected student's email
         if (this.currentUserRole === 'admin') {
             activityCreatorEmail = this.activityForm.get('selectedStudent')?.value;
         }
 
         if (this.activityForm.valid && activityCreatorEmail) {
-            const subdomain = this.customizationService.getSubdomainFromUrl();  // Get subdomain
+            const subdomain = this.customizationService.getSubdomainFromUrl();
             const activityData = this.activityForm.getRawValue();
 
-            // Define Firestore path (without date grouping)
             const instituteDocRef = doc(this.firestore, `institutes/${subdomain}`);
             const activityCollection = collection(instituteDocRef, `activity_list`);
-            const activityDocRef = doc(activityCollection); // Auto-generated document ID for each activity
+            const activityDocRef = doc(activityCollection);
 
-            // Save the activity to Firestore with 'created_by' field as selected student's email (or current user)
             await setDoc(activityDocRef, {
                 ...activityData,
-                created_by: activityCreatorEmail,  // Use the selected student's email or current user
+                created_by: activityCreatorEmail,
                 created_at: new Date()
             });
 
-            // Refresh activities after submission
+            // Log Firestore Write Operation
+            this.logger.addLog({
+                type: 'WRITE',
+                module: 'AddActivityComponent',
+                method: 'onSubmit',
+                collection: `institutes/${subdomain}/activity_list`,
+                dataSize: JSON.stringify(activityData).length,
+                timestamp: new Date().toISOString(),
+            });
+
             this.getUserActivities().subscribe((activities) => {
                 this.activities = activities.map(activity => {
                     if (activity.created_at && activity.created_at.toDate) {
-                        activity.created_at = activity.created_at.toDate(); // Convert Firestore Timestamp to JS Date
+                        activity.created_at = activity.created_at.toDate();
                     }
                     return activity;
                 });
             });
-
-            console.log('Activity added successfully');
         } else {
             console.error('User not logged in or form is invalid');
         }
     }
 
-
-
     formatDate(date: Date): string {
         const day = ('0' + date.getDate()).slice(-2);
         const month = ('0' + (date.getMonth() + 1)).slice(-2);
         const year = date.getFullYear();
-        return `${day}${month}${year}`;  // Return date in ddmmyyyy format
+        return `${day}${month}${year}`;
     }
 
-    // Method to fetch activities based on date and user (optional userEmail and date)
     getUserActivities(userEmail?: string, dateStr?: string): Observable<any[]> {
         const subdomain = this.customizationService.getSubdomainFromUrl();
 
         return new Observable<any[]>(observer => {
-            // If userEmail is provided, use it; otherwise, fetch all users
             if (userEmail) {
                 this.fetchActivities(subdomain, observer, userEmail, dateStr);
             } else {
                 this.authService.getCurrentUser().subscribe(user => {
                     if (user && user.email && user.role !== 'admin') {
-                        // If the user is not an admin, fetch only their activities
                         this.fetchActivities(subdomain, observer, user.email, dateStr);
                     } else {
-                        // If the user is an admin, fetch all activities
                         this.fetchActivities(subdomain, observer, undefined, dateStr);
                     }
                 });
             }
         });
     }
-
-
 
     private fetchActivities(subdomain: string, observer: any, userEmail?: string, dateStr?: string): void {
         let activitiesCollection = collection(this.firestore, `institutes/${subdomain}/activity_list`);
@@ -190,7 +183,7 @@ export class AddActivityComponent implements OnInit {
             console.log('Filtering by user and date');
             const startOfDay = new Date(dateStr);
             const endOfDay = new Date(startOfDay);
-            endOfDay.setHours(23, 59, 59, 999); // End of the day
+            endOfDay.setHours(23, 59, 59, 999);
 
             activitiesQuery = query(
                 activitiesCollection,
@@ -203,7 +196,7 @@ export class AddActivityComponent implements OnInit {
             console.log('Filtering by date only');
             const startOfDay = new Date(dateStr);
             const endOfDay = new Date(startOfDay);
-            endOfDay.setHours(23, 59, 59, 999); // End of the day
+            endOfDay.setHours(23, 59, 59, 999);
 
             activitiesQuery = query(
                 activitiesCollection,
@@ -228,7 +221,6 @@ export class AddActivityComponent implements OnInit {
             );
         }
 
-        // Execute the query and fetch activities
         collectionData(activitiesQuery).subscribe({
             next: (activities) => {
                 console.log('Activities fetched:', activities);
@@ -244,8 +236,4 @@ export class AddActivityComponent implements OnInit {
             }
         });
     }
-
-
-
-
 }

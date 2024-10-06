@@ -3,15 +3,27 @@ import { Firestore, collection, collectionData, doc, getDoc, getDocs, writeBatch
 import { Observable, from, forkJoin, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { SyllabusNode } from './syllabus.interface';
+import { Logger } from '../logger.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class SyllabusService {
-    constructor(private firestore: Firestore) { }
+    constructor(private firestore: Firestore, private logger: Logger) { }
 
     getDistinctBoards(): Observable<{ id: string, name: string }[]> {
         const boardsCollection = collection(this.firestore, 'syllabus/masters/boards');
+
+        // Log Firestore Read Operation
+        this.logger.addLog({
+            type: 'READ',
+            module: 'SyllabusService',
+            method: 'getDistinctBoards',
+            collection: 'syllabus/masters/boards',
+            dataSize: 0,  // Can calculate data size if needed
+            timestamp: new Date().toISOString(),
+        });
+
         return from(getDocs(boardsCollection)).pipe(
             map((snapshot) => {
                 return snapshot.docs.map(doc => ({ id: doc.id, name: doc.data()['name'] }));
@@ -21,6 +33,17 @@ export class SyllabusService {
 
     getAllStandards(): Observable<SyllabusNode[]> {
         const standardsCollection = collection(this.firestore, 'syllabus/masters/standards');
+
+        // Log Firestore Read Operation
+        this.logger.addLog({
+            type: 'READ',
+            module: 'SyllabusService',
+            method: 'getAllStandards',
+            collection: 'syllabus/masters/standards',
+            dataSize: 0,
+            timestamp: new Date().toISOString(),
+        });
+
         return from(getDocs(standardsCollection)).pipe(
             map((snapshot) => {
                 return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as SyllabusNode);
@@ -30,6 +53,17 @@ export class SyllabusService {
 
     getStandardsByBoard(boardId: string): Observable<{ id: string, name: string }[]> {
         const standardsCollection = collection(this.firestore, 'syllabus/masters/standards');
+
+        // Log Firestore Read Operation
+        this.logger.addLog({
+            type: 'READ',
+            module: 'SyllabusService',
+            method: 'getStandardsByBoard',
+            collection: 'syllabus/masters/standards',
+            dataSize: 0,
+            timestamp: new Date().toISOString(),
+        });
+
         return from(getDocs(standardsCollection)).pipe(
             map((snapshot) => {
                 const standards = snapshot.docs
@@ -42,10 +76,21 @@ export class SyllabusService {
 
     getSubjectsByStandardAndBoard(standardId: string): Observable<{ id: string, name: string }[]> {
         const subjectsCollection = collection(this.firestore, 'syllabus/masters/subjects');
+
+        // Log Firestore Read Operation
+        this.logger.addLog({
+            type: 'READ',
+            module: 'SyllabusService',
+            method: 'getSubjectsByStandardAndBoard',
+            collection: 'syllabus/masters/subjects',
+            dataSize: 0,
+            timestamp: new Date().toISOString(),
+        });
+
         return from(getDocs(subjectsCollection)).pipe(
             map((snapshot) => {
                 return snapshot.docs
-                    .filter(doc => doc.data()['standardId'] === standardId) // Filter by standardId
+                    .filter(doc => doc.data()['standardId'] === standardId)
                     .map(doc => ({ id: doc.id, name: doc.data()['name'] }));
             })
         );
@@ -53,6 +98,17 @@ export class SyllabusService {
 
     getChaptersByStandardBoardAndSubject(subjectId: string): Observable<{ id: string, name: string }[]> {
         const chaptersCollection = collection(this.firestore, 'syllabus/masters/chapters');
+
+        // Log Firestore Read Operation
+        this.logger.addLog({
+            type: 'READ',
+            module: 'SyllabusService',
+            method: 'getChaptersByStandardBoardAndSubject',
+            collection: 'syllabus/masters/chapters',
+            dataSize: 0,
+            timestamp: new Date().toISOString(),
+        });
+
         return from(getDocs(chaptersCollection)).pipe(
             map((snapshot) => {
                 return snapshot.docs
@@ -62,9 +118,19 @@ export class SyllabusService {
         );
     }
 
-
     getCompleteSyllabusHierarchy(): Observable<SyllabusNode[]> {
         const syllabusMappingsCollection = collection(this.firestore, 'syllabus/syllabus-mapping/mappings');
+
+        // Log Firestore Read Operation
+        this.logger.addLog({
+            type: 'READ',
+            module: 'SyllabusService',
+            method: 'getCompleteSyllabusHierarchy',
+            collection: 'syllabus/syllabus-mapping/mappings',
+            dataSize: 0,
+            timestamp: new Date().toISOString(),
+        });
+
         return from(getDocs(syllabusMappingsCollection)).pipe(
             switchMap((syllabusSnapshot) => {
                 const boardIds = new Set<string>();
@@ -183,6 +249,16 @@ export class SyllabusService {
         });
 
         await batch.commit();
+
+        // Log Firestore Batch Delete Operation
+        this.logger.addLog({
+            type: 'BATCH_DELETE',
+            module: 'SyllabusService',
+            method: 'clearCollection',
+            collection: collectionPath,
+            dataSize: docsSnapshot.size,
+            timestamp: new Date().toISOString(),
+        });
     }
 
     async uploadToFirestore(data: any, collectionName: string) {
@@ -192,6 +268,16 @@ export class SyllabusService {
             batch.set(docRef, data[key]);
         }
         await batch.commit();
+
+        // Log Firestore Batch Write Operation
+        this.logger.addLog({
+            type: 'BATCH_WRITE',
+            module: 'SyllabusService',
+            method: 'uploadToFirestore',
+            collection: `syllabus/masters/${collectionName}`,
+            dataSize: Object.keys(data).length,
+            timestamp: new Date().toISOString(),
+        });
     }
 
     async uploadSyllabusToFirestore(data: any) {
@@ -202,5 +288,15 @@ export class SyllabusService {
             batch.set(docRef, item);
         }
         await batch.commit();
+
+        // Log Firestore Batch Write Operation for syllabus
+        this.logger.addLog({
+            type: 'BATCH_WRITE',
+            module: 'SyllabusService',
+            method: 'uploadSyllabusToFirestore',
+            collection: 'syllabus/syllabus-mapping/mappings',
+            dataSize: data.length,
+            timestamp: new Date().toISOString(),
+        });
     }
 }

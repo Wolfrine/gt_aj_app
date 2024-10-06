@@ -3,6 +3,7 @@ import { Firestore, collection, query, where, getDocs, DocumentData, QuerySnapsh
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Logger } from '../../logger.service'; // Import Logger service
 
 @Component({
     selector: 'app-observation-list',
@@ -18,7 +19,7 @@ export class ObservationListComponent {
     normalizedPageUrl = '';
     expanded = false;
 
-    constructor(private firestore: Firestore, private route: ActivatedRoute, private router: Router) { }
+    constructor(private firestore: Firestore, private route: ActivatedRoute, private router: Router, private logger: Logger) { } // Inject Logger
 
     ngOnInit(): void {
         this.pageUrl = this.router.url; // Get the current page URL
@@ -39,6 +40,17 @@ export class ObservationListComponent {
     async loadObservations(): Promise<void> {
         const col = collection(this.firestore, 'observations');
         const q = query(col, where('page', '==', this.normalizedPageUrl));
+
+        // Log Firestore Read Operation
+        this.logger.addLog({
+            type: 'READ',
+            module: 'ObservationListComponent',
+            method: 'loadObservations',
+            collection: 'observations',
+            dataSize: 0, // You can adjust this value if you want to calculate the data size
+            timestamp: new Date().toISOString(),
+        });
+
         const snapshot = await getDocs(q);
         this.observations = snapshot.docs.map(doc => ({
             id: doc.id,
@@ -53,6 +65,17 @@ export class ObservationListComponent {
                 text: this.newObservation,
                 completed: false
             });
+
+            // Log Firestore Write Operation
+            this.logger.addLog({
+                type: 'WRITE',
+                module: 'ObservationListComponent',
+                method: 'addObservation',
+                collection: 'observations',
+                dataSize: this.newObservation.length, // Assuming the data size is the length of the observation text
+                timestamp: new Date().toISOString(),
+            });
+
             this.newObservation = '';
             this.loadObservations(); // Reload the observations
         }
@@ -61,6 +84,17 @@ export class ObservationListComponent {
     async markAsCompleted(id: string): Promise<void> {
         const observationDoc = doc(this.firestore, 'observations', id);
         await updateDoc(observationDoc, { completed: true });
+
+        // Log Firestore Write Operation
+        this.logger.addLog({
+            type: 'WRITE',
+            module: 'ObservationListComponent',
+            method: 'markAsCompleted',
+            collection: `observations/${id}`,
+            dataSize: 0, // If you want, you can adjust the size of the updated field
+            timestamp: new Date().toISOString(),
+        });
+
         this.loadObservations(); // Reload the observations
     }
 

@@ -5,16 +5,21 @@ import { map, switchMap, tap, take } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { Firestore, doc, getDoc } from '@angular/fire/firestore';
 import { CustomizationService } from '../../customization.service';
+import { Logger } from '../../logger.service';  // Import Logger service
 
 @Injectable({
     providedIn: 'root'
 })
 export class RoleGuard implements CanActivate {
+
+    private cachedUserStatus: { [email: string]: boolean } = {};
+
     constructor(
         private authService: AuthService,
         private firestore: Firestore,
         private customizationService: CustomizationService,
-        private router: Router
+        private router: Router,
+        private logger: Logger  // Inject Logger service
     ) { }
 
     canActivate(
@@ -24,9 +29,9 @@ export class RoleGuard implements CanActivate {
         const expectedRoles = next.data['expectedRoles'] as string[] || [];
         console.log('expectedRoles in canActivate:', expectedRoles);
 
-        return this.authService.isAuthenticated().pipe(
-            switchMap(isAuthenticated => {
-                if (!isAuthenticated) {
+        return this.authService.getAuthState().pipe(  // Use getAuthState instead of isAuthenticated
+            switchMap(user => {
+                if (!user) {
                     this.router.navigate(['/unauthorized']);
                     return of(false);
                 }
@@ -43,12 +48,12 @@ export class RoleGuard implements CanActivate {
 
                         // If expectedRoles is empty, allow access if the user has any role other than 'user'
                         if (expectedRoles.length === 0) {
-                            return this.checkUserStatus(role);
+                            return this.checkUserStatus(role, user.email!);
                         }
 
                         // Otherwise, allow access if the user's role is in the expected roles
                         if (expectedRoles.includes(role)) {
-                            return this.checkUserStatus(role);
+                            return this.checkUserStatus(role, user.email!);
                         } else {
                             return of(false);
                         }
@@ -63,24 +68,24 @@ export class RoleGuard implements CanActivate {
         );
     }
 
-
-    private checkUserStatus(role: string): Observable<boolean> {
+    private checkUserStatus(role: string, email: string): Observable<boolean> {
         const subdomain = this.customizationService.getSubdomainFromUrl();
-        return this.authService.getCurrentUser().pipe(
-            switchMap(user => {
-                if (user) {
-                    const userDocRef = doc(this.firestore, `institutes/${subdomain}/users/${user.email}`);
-                    return from(getDoc(userDocRef)).pipe(
-                        map(docSnap => {
-                            if (docSnap.exists()) {
-                                const userData = docSnap.data() as any;
-                                return userData.status === 'accepted';
-                            }
-                            return false;
-                        })
-                    );
+
+        // Check cache first
+        if (this.cachedUserStatus[email]) {
+            return of(this.cachedUserStatus[email]);
+        }
+
+        const userDocRef = doc(this.firestore, `institutes/${subdomain}/users/${email}`);
+        return from(this.logger.logAndGet(userDocRef, 'RoleGuard', `institutes/${subdomain}/users`, 'checkUserStatus')).pipe(
+            map(docSnap => {
+                if (docSnap.exists()) {
+                    const userData = docSnap.data() as any;
+                    const isAccepted = userData.status === 'accepted';
+                    this.cachedUserStatus[email] = isAccepted;  // Cache the status
+                    return isAccepted;
                 }
-                return of(false);
+                return false;
             })
         );
     }

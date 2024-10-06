@@ -1,6 +1,12 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Firestore, collection, query, where, getDocs, DocumentData, QuerySnapshot, doc, getDoc } from '@angular/fire/firestore';
+import { Firestore, collection, query, where, getDocs, DocumentData, QuerySnapshot, doc, getDoc, DocumentSnapshot } from '@angular/fire/firestore';
+import { Logger } from './logger.service';  // Import Logger service
+
+// Define the expected data structure
+interface RegistrationData {
+    faviconUrl?: string;
+}
 
 @Injectable({
     providedIn: 'root'
@@ -8,7 +14,11 @@ import { Firestore, collection, query, where, getDocs, DocumentData, QuerySnapsh
 export class CustomizationService {
     private isLocalStorageAvailable: boolean;
 
-    constructor(private firestore: Firestore, @Inject(PLATFORM_ID) private platformId: Object) {
+    constructor(
+        private firestore: Firestore,
+        @Inject(PLATFORM_ID) private platformId: Object,
+        private logger: Logger  // Inject Logger
+    ) {
         this.isLocalStorageAvailable = this.checkLocalStorageAvailability();
     }
 
@@ -45,6 +55,16 @@ export class CustomizationService {
 
         const data = snapshot.docs.map(doc => doc.data())[0];
         this.cacheCustomization(subdomain, data);
+
+        // Log the read operation
+        this.logger.addLog({
+            type: 'READ',
+            module: 'CustomizationService',
+            collection: 'registrations',
+            dataSize: snapshot.size, // Size of data fetched
+            timestamp: new Date().toISOString(),
+        });
+
         return data;
     }
 
@@ -70,10 +90,13 @@ export class CustomizationService {
 
     async getFaviconUrl(subdomain: string): Promise<string> {
         const docRef = doc(this.firestore, `registrations/${subdomain}`);
-        const docSnap = await getDoc(docRef);
+
+        // Cast to DocumentSnapshot with the RegistrationData interface
+        const docSnap = await this.logger.logAndGet(docRef, 'CustomizationService', 'getFaviconUrl', 'registrations') as DocumentSnapshot<RegistrationData>;
+
         if (docSnap.exists()) {
-            const data = docSnap.data();
-            return data?.['faviconUrl'] || '';
+            const data = docSnap.data() as RegistrationData;  // Explicitly cast to RegistrationData
+            return data?.faviconUrl || '';
         }
         return '';
     }

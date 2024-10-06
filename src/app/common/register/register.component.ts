@@ -4,6 +4,7 @@ import { inject } from '@angular/core';
 import { Firestore, collection, query, where, getDocs } from '@angular/fire/firestore';
 import { AuthService } from '../auth/auth.service';
 import { CustomizationService } from '../../customization.service';
+import { Logger } from '../../logger.service';  // Import Logger service
 
 @Component({
     selector: 'app-register',
@@ -14,6 +15,7 @@ export class RegisterComponent implements OnInit {
     private firestore = inject(Firestore);
     private authService = inject(AuthService);
     private customizationService = inject(CustomizationService);
+    private logger = inject(Logger); // Inject Logger
 
     async ngOnInit() {
         this.authService.user$.subscribe(async (user) => {
@@ -21,6 +23,17 @@ export class RegisterComponent implements OnInit {
                 const instituteName = this.customizationService.getSubdomainFromUrl();
                 const usersCollection = collection(this.firestore, `institutes/${instituteName}/users`);
                 const q = query(usersCollection, where('email', '==', user.email));
+
+                // Log Firestore Read Operation
+                this.logger.addLog({
+                    type: 'READ',
+                    module: 'RegisterComponent',
+                    method: 'ngOnInit',
+                    collection: `institutes/${instituteName}/users`,
+                    dataSize: 0,  // Data size can be adjusted as per the document fetched
+                    timestamp: new Date().toISOString(),
+                });
+
                 const querySnapshot = await getDocs(q);
 
                 if (!querySnapshot.empty) {
@@ -33,6 +46,4 @@ export class RegisterComponent implements OnInit {
             }
         });
     }
-
-
 }

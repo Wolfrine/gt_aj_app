@@ -20,6 +20,7 @@ import { BasicQuizComponent } from './dashboard/quiz-module/basic-quiz/basic-qui
 import { ManageQuizDatabankComponent } from './dashboard/quiz-module/manage-quiz-databank/manage-quiz-databank.component';
 import { ViewQuizDatabankComponent } from './dashboard/quiz-module/view-quiz-databank/view-quiz-databank.component';
 import { AddActivityComponent } from './dashboard/add-activity/add-activity.component';
+import { GetLogsComponent } from './common/get-logs/get-logs.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/home', pathMatch: 'full' },
@@ -38,6 +39,7 @@ export const routes: Routes = [
     { path: 'quiz/manage-quiz-databank', component: ManageQuizDatabankComponent, data: { title: 'Manage quiz databank' } },
     { path: 'quiz/view-quiz-databank', component: ViewQuizDatabankComponent, data: { title: 'View quiz databank' } },
     { path: 'add-activity', component: AddActivityComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRoles: ['teacher', 'student', 'admin'], title: 'Add class activity' } },
+    { path: 'get-logs', component: GetLogsComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRoles: ['admin'], title: 'Get Logs' } },
     { path: 'documentation', component: MarkdownComponent, data: { title: 'Documentation' } },
 
     { path: '**', component: Error404Component }

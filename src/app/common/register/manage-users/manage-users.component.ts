@@ -13,6 +13,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms'; // Needed for ngModel
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input'; // For matInput directive
+import { Logger } from '../../../logger.service';  // Import Logger service
 
 interface User {
     email: string;
@@ -44,11 +45,23 @@ export class ManageUsersComponent implements OnInit {
         private firestore: Firestore,
         private customizationService: CustomizationService,
         private snackBar: MatSnackBar,
-        private bottomSheet: MatBottomSheet // Inject BottomSheet
+        private bottomSheet: MatBottomSheet,  // Inject BottomSheet
+        private logger: Logger  // Inject Logger service
     ) { }
 
     ngOnInit(): void {
         const usersCollection = collection(this.firestore, `institutes/${this.subdomain}/users`);
+
+        // Log Firestore Read Operation
+        this.logger.addLog({
+            type: 'READ',
+            module: 'ManageUsersComponent',
+            method: 'ngOnInit',
+            collection: `institutes/${this.subdomain}/users`,
+            dataSize: 0,  // Adjust based on the actual size of the data
+            timestamp: new Date().toISOString(),
+        });
+
         collectionData(usersCollection, { idField: 'id' }).pipe(
             map(users => users as User[])
         ).subscribe(users => {
@@ -71,6 +84,16 @@ export class ManageUsersComponent implements OnInit {
                 if (status) {
                     updateData.status = status;
                 }
+
+                // Log Firestore Write Operation
+                this.logger.addLog({
+                    type: 'WRITE',
+                    module: 'ManageUsersComponent',
+                    method: 'updateUserStatus',
+                    collection: `institutes/${this.subdomain}/users/${user.email}`,
+                    dataSize: JSON.stringify(updateData).length,  // Log the size of the update data
+                    timestamp: new Date().toISOString(),
+                });
 
                 updateDoc(userDocRef, updateData).then(() => {
                     this.snackBar.open(`User ${user.name} ${status ? 'status updated to ' + status : 'admin message updated'}`, 'Close', {
@@ -115,7 +138,8 @@ export class ManageUsersComponent implements OnInit {
         MatFormFieldModule,
         MatButtonModule,
         MatInputModule, // Importing MatInputModule for matInput directive
-        FormsModule]
+        FormsModule
+    ]
 })
 export class AdminMessageSheet {
     adminMessage = '';

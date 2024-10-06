@@ -3,12 +3,13 @@ import { Auth, signInWithPopup, GoogleAuthProvider, signOut, UserCredential, Use
 import { Firestore, doc, getDoc, DocumentData, collection, query, where, collectionData } from '@angular/fire/firestore';
 import { authState } from 'rxfire/auth';
 import { Observable, of, from, BehaviorSubject } from 'rxjs';
-import { switchMap, map, take } from 'rxjs/operators';
+import { switchMap, map, take, tap } from 'rxjs/operators'; // Added `tap` to cache results
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { CustomizationService } from '../../customization.service';
 import { AuthComponent } from './auth.component';
 import { NgZone } from '@angular/core'; // Import NgZone
+import { Logger } from '../../logger.service';  // Import Logger service
 
 export interface UserRole extends DocumentData {
     role: string;
@@ -30,6 +31,11 @@ export class AuthService {
     user$: Observable<UserWithRole | null>;
     private userSubject = new BehaviorSubject<UserWithRole | null>(null);
     private loginNotificationShown = new BehaviorSubject<boolean>(false);
+
+    // Added caching for user data
+    private currentUserData: UserWithRole | null = null; // Cache for current user data
+    private authState$ = authState(this.auth).pipe(take(1));  // Cached authState observable
+
     redirectUrl: string | null = null;
 
     constructor(
@@ -38,35 +44,47 @@ export class AuthService {
         private dialog: MatDialog,
         private customizationService: CustomizationService,
         private router: Router,
-        private ngZone: NgZone
+        private ngZone: NgZone,
+        private logger: Logger  // Inject Logger service
     ) {
         this.user$ = this.userSubject.asObservable();
-
         // Fetch user once on initialization
-        authState(this.auth).pipe(
+        this.getAuthState().subscribe(); // Subscribe to getAuthState to fetch user data once
+    }
+
+    // This method caches the result of authState and reuses it across the application
+    getAuthState(): Observable<UserWithRole | null> {
+        if (this.currentUserData) {
+            return of(this.currentUserData);  // Return cached user data if available
+        }
+        return this.authState$.pipe(
             switchMap(user => {
-                if (user) {
+                if (user && !this.currentUserData) {
                     const userDocRef = doc(this.firestore, `institutes/${this.customizationService.getSubdomainFromUrl()}/users/${user.email}`);
-                    return from(getDoc(userDocRef)).pipe(
+                    return from(this.logger.logAndGet(userDocRef, 'AuthService', `institutes/${this.customizationService.getSubdomainFromUrl()}/users`, 'authState')).pipe(
                         map(docSnap => {
                             if (docSnap.exists()) {
                                 const userData = docSnap.data() as UserRole;
-                                const userWithRole: UserWithRole = { ...user, role: userData.role, adminMessage: userData['adminMessage'] || null }; // Fetch adminMessage
-                                this.userSubject.next(userWithRole);
-                                return userWithRole;
+                                this.currentUserData = { ...user, role: userData.role, adminMessage: userData['adminMessage'] || null };
+                                this.userSubject.next(this.currentUserData);
+                                return this.currentUserData;
                             } else {
                                 const userWithRole: UserWithRole = { ...user, role: 'user' };
-                                this.userSubject.next(userWithRole);
+                                this.currentUserData = userWithRole;
+                                this.userSubject.next(this.currentUserData);
                                 return userWithRole;
                             }
                         })
                     );
                 } else {
-                    this.userSubject.next(null);
-                    return of(null);
+                    this.userSubject.next(this.currentUserData);
+                    return of(this.currentUserData);
                 }
+            }),
+            tap(user => {
+                this.currentUserData = user; // Cache the user data
             })
-        ).subscribe();
+        );
     }
 
     getCurrentUser(): Observable<UserWithRole | null> {
@@ -108,9 +126,9 @@ export class AuthService {
         });
     }
 
-
     signOut() {
         this.userSubject.next(null);  // Clear cached role on sign out
+        this.currentUserData = null;  // Clear cached user data
         this.loginNotificationShown.next(false);  // Reset the notification flag on sign out
         this.router.navigate(['/login']);
         return signOut(this.auth);
@@ -150,6 +168,16 @@ export class AuthService {
     getStudents(subdomain: string): Observable<any[]> {
         const usersCollection = collection(this.firestore, `institutes/${subdomain}/users`);
         const studentsQuery = query(usersCollection, where('role', '==', 'student'));
+
+        // Log Firestore Query Operation
+        this.logger.addLog({
+            type: 'READ',
+            module: 'AuthService',
+            method: 'getStudents',
+            collection: `institutes/${subdomain}/users`,
+            dataSize: 0,  // Adjust this if you want to calculate the actual size of data fetched
+            timestamp: new Date().toISOString(),
+        });
 
         return collectionData(studentsQuery);
     }

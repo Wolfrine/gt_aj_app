@@ -17,10 +17,12 @@ import { User } from '@angular/fire/auth';
 import { MatMenuModule } from '@angular/material/menu';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { Logger } from './logger.service';  // Import Logger service
 
 @Component({
     selector: 'app-root',
     standalone: true,
+    providers: [Logger],  // Add Logger globally here
     imports: [
         RouterOutlet,
         MatToolbarModule,

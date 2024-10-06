@@ -1,0 +1,19 @@
+<div class="log-download-container">
+    <h1>Download Logs</h1>
+
+    <div class="log-summary">
+        <p>Total Logs Available: {{ logs.length }}</p>
+        <button mat-raised-button color="primary" (click)="downloadLogsAsJson()">
+            Download Logs as JSON
+        </button>
+    </div>
+
+    <div class="log-list">
+        <h2>Log Preview (First 5 Logs):</h2>
+        <ul>
+            <li *ngFor="let log of logs | slice:0:5">
+                {{ log | json }}
+            </li>
+        </ul>
+    </div>
+</div>
