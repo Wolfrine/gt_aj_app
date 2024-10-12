@@ -42,7 +42,7 @@ export const routes: Routes = [
     { path: 'get-logs', component: GetLogsComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRoles: ['admin'], title: 'Get Logs' } },
     { path: 'documentation', component: MarkdownComponent, data: { title: 'Documentation' } },
 
-    { path: '**', component: Error404Component }
+    { path: '**', component: Error404Component, data: { title: '404 not found' } }
 ];
 
 

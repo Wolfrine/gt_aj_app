@@ -18,6 +18,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Logger } from './logger.service';  // Import Logger service
+import { MessagingService } from './messaging.service';
 
 @Component({
     selector: 'app-root',
@@ -57,6 +58,7 @@ export class AppComponent implements OnInit {
         @Inject(PLATFORM_ID) private platformId: Object,
         private renderer: Renderer2,
         private elRef: ElementRef,
+        private messagingService: MessagingService,
         @Inject(DOCUMENT) private document: Document
     ) {
         console.log('AppComponent constructor');
@@ -93,6 +95,7 @@ export class AppComponent implements OnInit {
     }
 
     async ngOnInit() {
+
         this.authService.user$.subscribe(user => {
             if (user) {
                 this.user = user;
@@ -122,6 +125,21 @@ export class AppComponent implements OnInit {
                 this.setTitleWithSubdomain(subdomain, pageTitle);
             });
         });
+
+
+
+        if (isPlatformBrowser(this.platformId)) {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.ready;
+                    this.messagingService.requestPermission(registration);  // Call request permission with registration
+                } catch (error) {
+                    console.error('Service Worker registration failed:', error);
+                }
+            } else {
+                console.warn('Service Workers are not supported by this browser.');
+            }
+        }
 
         let subdomain = '';
         if (typeof window !== 'undefined') {

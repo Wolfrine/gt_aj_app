@@ -9,12 +9,14 @@ import { provideFirestore, getFirestore } from '@angular/fire/firestore';
 import { environment } from '../environments/environment';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideServiceWorker } from '@angular/service-worker';
+import { provideMessaging, getMessaging } from '@angular/fire/messaging';
 
 export const appConfig: ApplicationConfig = {
     providers: [
         provideClientHydration(),
         provideAnimationsAsync(),
         provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
+        provideMessaging(() => getMessaging()),
         provideAuth(() => getAuth()),
         provideFirestore(() => getFirestore()),
         provideRouter(routes),

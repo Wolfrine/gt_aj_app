@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Auth, signInWithPopup, GoogleAuthProvider, signOut, UserCredential, User as FirebaseUser } from '@angular/fire/auth';
-import { Firestore, doc, getDoc, DocumentData, collection, query, where, collectionData } from '@angular/fire/firestore';
+import { Firestore, doc, getDoc, DocumentData, collection, query, where, collectionData, setDoc } from '@angular/fire/firestore';
 import { authState } from 'rxfire/auth';
 import { Observable, of, from, BehaviorSubject } from 'rxjs';
 import { switchMap, map, take, tap } from 'rxjs/operators'; // Added `tap` to cache results
@@ -10,6 +10,7 @@ import { CustomizationService } from '../../customization.service';
 import { AuthComponent } from './auth.component';
 import { NgZone } from '@angular/core'; // Import NgZone
 import { Logger } from '../../logger.service';  // Import Logger service
+import { MessagingService } from '../../messaging.service';
 
 export interface UserRole extends DocumentData {
     role: string;
@@ -45,7 +46,8 @@ export class AuthService {
         private customizationService: CustomizationService,
         private router: Router,
         private ngZone: NgZone,
-        private logger: Logger  // Inject Logger service
+        private logger: Logger,  // Inject Logger service
+        private messagingService: MessagingService
     ) {
         this.user$ = this.userSubject.asObservable();
         // Fetch user once on initialization
@@ -67,11 +69,13 @@ export class AuthService {
                                 const userData = docSnap.data() as UserRole;
                                 this.currentUserData = { ...user, role: userData.role, adminMessage: userData['adminMessage'] || null };
                                 this.userSubject.next(this.currentUserData);
+                                this.saveFCMToken(user);
                                 return this.currentUserData;
                             } else {
                                 const userWithRole: UserWithRole = { ...user, role: 'user' };
                                 this.currentUserData = userWithRole;
                                 this.userSubject.next(this.currentUserData);
+                                this.saveFCMToken(user);
                                 return userWithRole;
                             }
                         })
@@ -180,5 +184,46 @@ export class AuthService {
         });
 
         return collectionData(studentsQuery);
+    }
+
+    saveFCMToken(user: FirebaseUser) {
+        this.messagingService.getToken().then((token) => {
+            if (token) {
+                const userRef = doc(this.firestore, `institutes/${this.customizationService.getSubdomainFromUrl()}/users/${user.email}`);
+                getDoc(userRef).then((docSnap) => {
+                    if (docSnap.exists()) {
+                        const userData = docSnap.data();
+                        let tokens = userData['fcmTokens'] || [];  // Retrieve the existing token array or initialize
+                        if (!tokens.includes(token)) {  // Add the token if it doesn't already exist
+                            tokens.push(token);
+                            setDoc(userRef, { fcmTokens: tokens }, { merge: true })
+                                .then(() => {
+                                    console.log('FCM Token added successfully.');
+                                })
+                                .catch((error) => {
+                                    console.error('Error saving FCM token: ', error);
+                                });
+                        } else {
+                            console.log('Token already exists.');
+                        }
+                    } else {
+                        // User document doesn't exist yet, create it with the token array
+                        setDoc(userRef, { fcmTokens: [token] }, { merge: true })
+                            .then(() => {
+                                console.log('FCM Token saved successfully in new user document.');
+                            })
+                            .catch((error) => {
+                                console.error('Error creating user document with FCM token: ', error);
+                            });
+                    }
+                }).catch((error) => {
+                    console.error('Error fetching user document: ', error);
+                });
+            } else {
+                console.log('No FCM token received.');
+            }
+        }).catch((error) => {
+            console.error('Error fetching FCM token:', error);
+        });
     }
 }
