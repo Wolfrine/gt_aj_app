@@ -37,7 +37,7 @@ import { Logger } from './logger.service';  // Import Logger service
     schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class AppComponent implements OnInit {
-    title = '';
+    title = 'GT Gurukul';
     themeColor = '#3f51b5';
     header = 'defaultHeader';
     location_path = '';
@@ -137,6 +137,7 @@ export class AppComponent implements OnInit {
                 this.header = data.header;
                 this.applyThemeColor();
                 this.setFavicon(data.faviconUrl);
+                this.updateManifest(data.websiteTitle, this.themeColor);
                 console.log(data.status);
                 if (data.status === 'disabled' || data.status === 'pending') {
                     this.redirectToRegistration(subdomain);
@@ -207,6 +208,60 @@ export class AppComponent implements OnInit {
         const capitalizedSubdomain = subdomain.charAt(0).toUpperCase() + subdomain.slice(1);
         const fullTitle = `${capitalizedSubdomain} - ${pageTitle}`;
         this.titleService.setTitle(fullTitle);
+    }
+
+    // Method to update manifest dynamically
+    private updateManifest(appName: string, themeColor: string) {
+        const manifest = {
+            "name": appName || "Default Name",
+            "short_name": appName || "Default Name",
+            "theme_color": themeColor || "#1976d2",
+            "background_color": "#fafafa",
+            "display": "standalone",
+            "scope": "./",
+            "start_url": "./",
+            "icons": [
+                {
+                    "src": "assets/icons/icon-72x72.png",
+                    "sizes": "72x72",
+                    "type": "image/png",
+                    "purpose": "maskable any"
+                },
+                {
+                    "src": "assets/icons/icon-96x96.png",
+                    "sizes": "96x96",
+                    "type": "image/png",
+                    "purpose": "maskable any"
+                },
+                {
+                    "src": "assets/icons/icon-128x128.png",
+                    "sizes": "128x128",
+                    "type": "image/png",
+                    "purpose": "maskable any"
+                },
+                {
+                    "src": "assets/icons/icon-144x144.png",
+                    "sizes": "144x144",
+                    "type": "image/png",
+                    "purpose": "maskable any"
+                },
+                {
+                    "src": "assets/icons/icon-192x192.png",
+                    "sizes": "192x192",
+                    "type": "image/png",
+                    "purpose": "maskable any"
+                }
+            ]
+        };
+
+        const stringManifest = JSON.stringify(manifest);
+        const blob = new Blob([stringManifest], { type: 'application/json' });
+        const manifestURL = URL.createObjectURL(blob);
+
+        const link = document.querySelector('link[rel="manifest"]');
+        if (link) {
+            link.setAttribute('href', manifestURL);
+        }
     }
 
     redirectToRegistration(subdomain: string) {
