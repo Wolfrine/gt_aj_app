@@ -1,0 +1,111 @@
+{
+  "configVersion": 1,
+  "timestamp": 1728714988010,
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/chunk-IBAQJQLS.js",
+        "/chunk-ISC7HBLB.js",
+        "/chunk-ML5JVG3B.js",
+        "/chunk-TV2DTAGD.js",
+        "/favicon.ico",
+        "/index.html",
+        "/main-V5REODX7.js",
+        "/manifest.webmanifest",
+        "/polyfills-FFHMD2TL.js",
+        "/styles-ETWZIQZF.css"
+      ],
+      "patterns": []
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/assets/GT Logo.jpg",
+        "/assets/Syllabus.xlsx",
+        "/assets/activities.png",
+        "/assets/banner.jpg",
+        "/assets/icons/icon-128x128.png",
+        "/assets/icons/icon-144x144.png",
+        "/assets/icons/icon-152x152.png",
+        "/assets/icons/icon-192x192.png",
+        "/assets/icons/icon-384x384.png",
+        "/assets/icons/icon-512x512.png",
+        "/assets/icons/icon-72x72.png",
+        "/assets/icons/icon-96x96.png",
+        "/assets/manage-syllabus.png",
+        "/assets/manage-users.png",
+        "/assets/manage-users.webp",
+        "/assets/news_bg.webp",
+        "/assets/newsbg.jpg",
+        "/assets/quiz.png",
+        "/assets/quiz_template.xlsx",
+        "/assets/~$Syllabus.xlsx"
+      ],
+      "patterns": []
+    }
+  ],
+  "dataGroups": [],
+  "hashTable": {
+    "/assets/GT Logo.jpg": "60da4937b6bd0a5c06c9d2b4bfff5e2293c27c28",
+    "/assets/Syllabus.xlsx": "1e6be3a3770e7097515f0c1ab73f3d5faa4fe5bd",
+    "/assets/activities.png": "df0b3e802cbcbd0018bdbeda3f639931feae1a0d",
+    "/assets/banner.jpg": "89d8f195b2700add87e9828430b846cf81c6712b",
+    "/assets/icons/icon-128x128.png": "f912963bdc6d5a38d8f1dd0afbaab2ce8d657acb",
+    "/assets/icons/icon-144x144.png": "b155fd5f2fd5d2ea7760721063003c4cd95fd783",
+    "/assets/icons/icon-152x152.png": "eae6e0f0c8afb8aaae339e2a569b43e9238e5e6c",
+    "/assets/icons/icon-192x192.png": "15c4180454633880d98674aa7394656196c91584",
+    "/assets/icons/icon-384x384.png": "94a915751ef6c9282df9aea405ad679230631814",
+    "/assets/icons/icon-512x512.png": "1de182f76f7329dfa8f9fcdd1fdcdd695bea6a99",
+    "/assets/icons/icon-72x72.png": "aa88a6096bd973be7f6d7a5489bfa6bc2463f8c4",
+    "/assets/icons/icon-96x96.png": "7fb8f59c30ce2ff12c700321a0b39e14b3dc8f95",
+    "/assets/manage-syllabus.png": "017934db0f4a85b64de02c263b37b13ef4fb06f7",
+    "/assets/manage-users.png": "49345374234fadb28f5f2020618a4ce9c2459b52",
+    "/assets/manage-users.webp": "1f16a42df1f7c124e39f0973232e663ae211edf4",
+    "/assets/news_bg.webp": "702ea973ae098b2bdf20b3c45af9fec57c813042",
+    "/assets/newsbg.jpg": "9c4de7515873ac15034d15f01f3ad19389ebd0ee",
+    "/assets/quiz.png": "daae20cbab4aeeffcbca110bad201d37d1129da6",
+    "/assets/quiz_template.xlsx": "95ac1353edfd8ee457a4b0f0db8ce221d072399e",
+    "/assets/~$Syllabus.xlsx": "f8824581acd1b625879b051e1d69d86ffd90aa2d",
+    "/chunk-IBAQJQLS.js": "9ff7ce206fcf0c8ed3b4ea216b4e925a7aebe68f",
+    "/chunk-ISC7HBLB.js": "908beb5cf6ead71da39fa6e566a562679ebf361d",
+    "/chunk-ML5JVG3B.js": "4e8f0ca2711f20a91614d7c71066a4c12f315abf",
+    "/chunk-TV2DTAGD.js": "f0d9b4335dec8a3ac34190b987f6d0546687e352",
+    "/favicon.ico": "8d6906212465db0984d4aac1c5ca69f4f69b6093",
+    "/index.html": "c833d2dd9a9357c2a9482dc895107e5827627268",
+    "/main-V5REODX7.js": "5b0d984627051a30011879a40a4ca0b4da43758a",
+    "/manifest.webmanifest": "43344173f6932cf9f976eac57e5640db6aeda8cc",
+    "/polyfills-FFHMD2TL.js": "f49b49a155bc7d192db62a4c15d0a612b460a667",
+    "/styles-ETWZIQZF.css": "4078c7049217c74fea121cd6cd7f71914f127ade"
+  },
+  "navigationUrls": [
+    {
+      "positive": true,
+      "regex": "^\\/.*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*\\.[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*\\/.*$"
+    }
+  ],
+  "navigationRequestStrategy": "performance"
+}
