@@ -212,47 +212,49 @@ export class AppComponent implements OnInit {
 
     // Method to update manifest dynamically
     private updateManifest(appName: string, themeColor: string) {
+        const baseUrl = window.location.origin;  // Get base URL of the site
+
         const manifest = {
             "name": appName || "Default Name",
             "short_name": appName || "Default Name",
             "theme_color": themeColor || "#1976d2",
             "background_color": "#fafafa",
             "display": "standalone",
-            "scope": "/",
-            "start_url": "/",
+            "scope": `${baseUrl}/`,  // Use absolute URL for scope
+            "start_url": `${baseUrl}/`,  // Use absolute URL for start_url
             "icons": [
                 {
-                    "src": "/assets/icons/icon-48x48.png",
+                    "src": `${baseUrl}/assets/icons/icon-48x48.png`,  // Use absolute path for icon
                     "sizes": "48x48",
                     "type": "image/png",
                     "purpose": "maskable any"
                 },
                 {
-                    "src": "/assets/icons/icon-72x72.png",
+                    "src": `${baseUrl}/assets/icons/icon-72x72.png`,
                     "sizes": "72x72",
                     "type": "image/png",
                     "purpose": "maskable any"
                 },
                 {
-                    "src": "/assets/icons/icon-96x96.png",
+                    "src": `${baseUrl}/assets/icons/icon-96x96.png`,
                     "sizes": "96x96",
                     "type": "image/png",
                     "purpose": "maskable any"
                 },
                 {
-                    "src": "/assets/icons/icon-144x144.png",
+                    "src": `${baseUrl}/assets/icons/icon-144x144.png`,
                     "sizes": "144x144",
                     "type": "image/png",
                     "purpose": "maskable any"
                 },
                 {
-                    "src": "/assets/icons/icon-192x192.png",
+                    "src": `${baseUrl}/assets/icons/icon-192x192.png`,
                     "sizes": "192x192",
                     "type": "image/png",
                     "purpose": "maskable any"
                 },
                 {
-                    "src": "/assets/icons/icon-512x512.png",
+                    "src": `${baseUrl}/assets/icons/icon-512x512.png`,
                     "sizes": "512x512",
                     "type": "image/png",
                     "purpose": "maskable any"
@@ -269,6 +271,7 @@ export class AppComponent implements OnInit {
             link.setAttribute('href', manifestURL);
         }
     }
+
 
     redirectToRegistration(subdomain: string) {
         window.location.href = `https://register.growthtutorials.in/register?request=${subdomain}`;
