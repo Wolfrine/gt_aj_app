@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1728745909815,
+  "timestamp": 1728746153132,
   "index": "/index.html",
   "assetGroups": [
     {
@@ -60,12 +60,12 @@
     "/assets/Syllabus.xlsx": "1e6be3a3770e7097515f0c1ab73f3d5faa4fe5bd",
     "/assets/activities.png": "df0b3e802cbcbd0018bdbeda3f639931feae1a0d",
     "/assets/banner.jpg": "89d8f195b2700add87e9828430b846cf81c6712b",
-    "/assets/icons/icon-144-144.png": "975567518f86796ebaa3b475d5415453c8718792",
-    "/assets/icons/icon-192-192.png": "ba1ceb5482cc1f3833255463c331b67598a3812e",
-    "/assets/icons/icon-48-48.png": "5300917de12632c73b158caf70283d922cc84de6",
-    "/assets/icons/icon-512-512.png": "663b26f4f71cf247251037e32410e7ce570ad1d3",
-    "/assets/icons/icon-72-72.png": "052f2aa853ee17f8d6cf65642b181a33ffb8a34a",
-    "/assets/icons/icon-96-96.png": "c9c01eafcfd497e0fc63d1ca659ecd22df395858",
+    "/assets/icons/icon-144-144.png": "81219ba9924d2fb7a6f7f11c6c3432f0f283650c",
+    "/assets/icons/icon-192-192.png": "411fe8421b3cda08dbf2a4635a8e22eb2d959da2",
+    "/assets/icons/icon-48-48.png": "bca8fd51f33252371737c743885e4671191e3cbc",
+    "/assets/icons/icon-512-512.png": "9f353fb10954983ae81a87d7b04f5d75577b55ec",
+    "/assets/icons/icon-72-72.png": "d150b1e3513a4f2bde21e80932f1cd96c35c2744",
+    "/assets/icons/icon-96-96.png": "56cf542fb03e09367fed81551147aa5f246e862b",
     "/assets/manage-syllabus.png": "017934db0f4a85b64de02c263b37b13ef4fb06f7",
     "/assets/manage-users.png": "49345374234fadb28f5f2020618a4ce9c2459b52",
     "/assets/manage-users.webp": "1f16a42df1f7c124e39f0973232e663ae211edf4",
