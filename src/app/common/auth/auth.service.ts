@@ -114,21 +114,49 @@ export class AuthService {
     googleSignIn(): Promise<UserCredential> {
         return signInWithPopup(this.auth, new GoogleAuthProvider()).then(result => {
             this.ngZone.run(() => {
-                // Close the login dialog inside Angular's zone
-                this.dialog.closeAll();
+                const userEmail = result.user.email;
+                if (userEmail) {
+                    const userDocRef = doc(this.firestore, `institutes/${this.customizationService.getSubdomainFromUrl()}/users/${userEmail}`);
+                    getDoc(userDocRef).then((docSnap) => {
+                        if (docSnap.exists()) {
+                            const userData = docSnap.data() as UserRole;
 
-                // Wait briefly to ensure user data is loaded before redirection
-                setTimeout(() => {
-                    this.handlePostLoginRedirect(); // Redirect after login
-                }, 500); // Delay to allow any asynchronous operations to complete
+                            // Check if the user has 'accepted' status and a valid role
+                            if (userData.status === 'accepted' && userData.role) {
+                                console.log('User is accepted and has a valid role. Redirecting to dashboard.');
 
+                                // Close all dialogs and navigate to dashboard
+                                this.dialog.closeAll();
+                                this.router.navigate(['/dashboard']).then(() => {
+                                    console.log('Redirected to dashboard');
+
+                                    // Check if the URL is still '/login' after the redirection
+                                    if (this.router.url === '/login') {
+                                        console.warn('Still on /login after redirection, reloading page');
+                                        window.location.reload();  // Force reload if still on /login
+                                    }
+                                });
+                            } else {
+                                console.warn('User is not accepted or has no valid role.');
+                            }
+                        } else {
+                            console.warn('User document does not exist in Firestore.');
+                        }
+                    }).catch(error => {
+                        console.error('Error fetching user document from Firestore:', error);
+                    });
+                }
             });
+
             return result; // Return the UserCredential as expected
         }).catch(error => {
             console.error("Login failed:", error);
             throw error; // Rethrow the error to maintain the return type of the function
         });
     }
+
+
+
 
     signOut() {
         this.userSubject.next(null);  // Clear cached role on sign out

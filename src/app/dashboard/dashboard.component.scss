@@ -59,6 +59,10 @@
     justify-content: space-evenly;
     align-items: center;
 
+    h2 {
+        text-transform: capitalize;
+    }
+
     .app-text {
         padding: 24px 65px 24px 24px;
     }
