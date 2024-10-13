@@ -17,6 +17,9 @@ export class DashboardComponent implements OnInit {
 
     user$!: Observable<UserWithRole | null>;
 
+    installPromptEvent: any = null;
+    showInstallWidget = true;
+
     actionlist = [
         { "title": "Add Activity", "imageUrl": "./assets/activities.png", "color": "rgb(245,245,220)", "route": "/add-activity" },
         { "title": "Manage Syllabus", "imageUrl": "./assets/manage-syllabus.png", "color": "rgb(245,220,245)", "route": "/manage-syllabus", "access": "admin" },
@@ -33,5 +36,37 @@ export class DashboardComponent implements OnInit {
     }
 
     ngOnInit() {
+        // Listen for the 'beforeinstallprompt' event
+        window.addEventListener('beforeinstallprompt', (event: Event) => {
+            console.log('beforeinstallprompt event fired');  // Log event
+            event.preventDefault(); // Prevent the default install prompt
+            this.installPromptEvent = event; // Store the event for triggering later
+            this.showInstallWidget = true; // Show your custom install widget
+        });
+
+        // Check if already installed (for desktop debugging)
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA was installed');
+            this.showInstallWidget = false;
+        });
+    }
+
+    // Trigger the installation prompt when the user clicks the install button
+    installPWA() {
+        if (this.installPromptEvent) {
+            this.installPromptEvent.prompt(); // Show the native install prompt
+            this.installPromptEvent.userChoice.then((choiceResult: { outcome: string }) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('User accepted the PWA installation');
+                } else {
+                    console.log('User dismissed the PWA installation');
+                }
+                this.installPromptEvent = null; // Reset the event
+                this.showInstallWidget = false; // Hide the install widget after interaction
+            });
+        } else {
+            console.warn('Install prompt event not captured');
+            alert('Use the browser\'s install button from URL to install the app.');
+        }
     }
 }

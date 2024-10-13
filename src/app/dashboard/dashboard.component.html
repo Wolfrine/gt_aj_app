@@ -24,4 +24,17 @@
     </div>
 </div>
 
+<div class="app-container">
+    <div *ngIf="showInstallWidget" class="install-widget">
+        <div class="app-text">
+            <h3>Get our App</h3>
+            <p>Install the app for a seamless experience!</p>
+            <button mat-raised-button color="primary" (click)="installPWA()">Install</button>
+        </div>
+        <div>
+            <img src="../../assets/download-app.png" height="260px">
+        </div>
+    </div>
+</div>
+
 <app-news-events></app-news-events>
