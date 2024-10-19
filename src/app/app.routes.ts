@@ -21,6 +21,7 @@ import { ManageQuizDatabankComponent } from './dashboard/quiz-module/manage-quiz
 import { ViewQuizDatabankComponent } from './dashboard/quiz-module/view-quiz-databank/view-quiz-databank.component';
 import { AddActivityComponent } from './dashboard/add-activity/add-activity.component';
 import { GetLogsComponent } from './common/get-logs/get-logs.component';
+import { CreateLiveQuizComponent } from './dashboard/quiz-module/live-quiz/create/create.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/home', pathMatch: 'full' },
@@ -41,6 +42,7 @@ export const routes: Routes = [
     { path: 'add-activity', component: AddActivityComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRoles: ['teacher', 'student', 'admin'], title: 'Add class activity' } },
     { path: 'get-logs', component: GetLogsComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRoles: ['admin'], title: 'Get Logs' } },
     { path: 'documentation', component: MarkdownComponent, data: { title: 'Documentation' } },
+    { path: 'quiz/live-quiz/create', component: CreateLiveQuizComponent, data: { title: 'Create Live Quiz' } },
 
     { path: '**', component: Error404Component, data: { title: '404 not found' } }
 ];

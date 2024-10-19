@@ -1,0 +1,93 @@
+<div class="create-quiz-container">
+    <h2>Create Live Quiz</h2>
+    <form [formGroup]="createQuizForm" (ngSubmit)="submitQuiz()">
+
+        <!-- Board Selection -->
+        <mat-form-field appearance="fill" class="form-field">
+            <mat-label>Board</mat-label>
+            <mat-select formControlName="board">
+                <mat-option *ngFor="let board of boards$ | async" [value]="board.id">
+                    {{ board.name }}
+                </mat-option>
+            </mat-select>
+            <mat-error *ngIf="createQuizForm.get('board')?.invalid">Board is required</mat-error>
+        </mat-form-field>
+
+        <!-- Standard Selection -->
+        <mat-form-field appearance="fill" class="form-field">
+            <mat-label>Standard</mat-label>
+            <mat-select formControlName="standard">
+                <mat-option *ngFor="let standard of standards$ | async" [value]="standard.id">
+                    {{ standard.name }}
+                </mat-option>
+            </mat-select>
+            <mat-error *ngIf="createQuizForm.get('standard')?.invalid">Standard is required</mat-error>
+        </mat-form-field>
+
+        <!-- Subject Selection -->
+        <mat-form-field appearance="fill" class="form-field">
+            <mat-label>Subject</mat-label>
+            <mat-select formControlName="subject">
+                <mat-option *ngFor="let subject of subjects$ | async" [value]="subject.id">
+                    {{ subject.name }}
+                </mat-option>
+            </mat-select>
+            <mat-error *ngIf="createQuizForm.get('subject')?.invalid">Subject is required</mat-error>
+        </mat-form-field>
+
+        <!-- Chapter Selection (Multi-Select) -->
+        <mat-form-field appearance="fill" class="form-field">
+            <mat-label>Chapters</mat-label>
+            <mat-select formControlName="chapters" multiple>
+                <mat-option *ngFor="let chapter of chapters$ | async" [value]="chapter.id">
+                    {{ chapter.name }}
+                </mat-option>
+            </mat-select>
+            <mat-error *ngIf="createQuizForm.get('chapters')?.invalid">At least one chapter is required</mat-error>
+        </mat-form-field>
+
+        <!-- Quiz Date -->
+        <mat-form-field appearance="fill" class="form-field">
+            <mat-label>Quiz Date</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="date">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+            <mat-error *ngIf="createQuizForm.get('date')?.invalid">Date is required</mat-error>
+        </mat-form-field>
+
+        <!-- Quiz Time -->
+        <mat-form-field appearance="fill" class="form-field">
+            <mat-label>Quiz Time</mat-label>
+            <input matInput type="time" formControlName="time">
+            <mat-error *ngIf="createQuizForm.get('time')?.invalid">Time is required</mat-error>
+        </mat-form-field>
+
+        <!-- Timer per question -->
+        <mat-form-field appearance="fill" class="form-field">
+            <mat-label>Timer per question (seconds)</mat-label>
+            <input matInput type="number" formControlName="timer">
+            <mat-error *ngIf="createQuizForm.get('timer')?.invalid">
+                Timer must be at least 5 seconds
+            </mat-error>
+        </mat-form-field>
+
+        <!-- Question Selection -->
+        <div class="question-selection">
+            <h3>Select Questions</h3>
+            <mat-checkbox *ngFor="let question of questions$ | async"
+                (change)="toggleQuestionSelection(question.id, $event)">
+                {{ question.question }}
+            </mat-checkbox>
+        </div>
+
+        <!-- Add New Question Section -->
+        <div class="add-question">
+            <h3>Add New Question</h3>
+            <app-manage-quiz-databank></app-manage-quiz-databank> <!-- Reuse the ManageQuizDatabankComponent -->
+        </div>
+
+        <!-- Submit button -->
+        <button mat-raised-button color="primary"
+            [disabled]="createQuizForm.invalid || selectedQuestions.length === 0">Create Quiz</button>
+    </form>
+</div>

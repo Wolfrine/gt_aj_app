@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, collectionData, addDoc, doc, setDoc, deleteDoc, query, where, getDocs, writeBatch } from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, addDoc, doc, setDoc, deleteDoc, query, where, getDocs, writeBatch, DocumentReference } from '@angular/fire/firestore';
 import { Observable, from, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { SyllabusService } from '../../manage-syllabus/syllabus.service';
@@ -11,9 +11,10 @@ import { Logger } from '../../logger.service';  // Import Logger service
 export class QuizService {
     constructor(private firestore: Firestore, private syllabusService: SyllabusService, private logger: Logger) { }
 
-    getQuestionsByChapter(chapterId: string): Observable<any[]> {
+    getQuestionsByChapter(chapterIds: string[]): Observable<any[]> {
         const quizCollection = collection(this.firestore, 'quizbank');
-        const q = query(quizCollection, where('chapterId', '==', chapterId));
+        const q = query(quizCollection, where('chapterId', 'in', chapterIds));  // Handle array of chapterIds
+
 
         // Log Firestore Read Operation
         this.logger.addLog({
@@ -26,7 +27,10 @@ export class QuizService {
         });
 
         return from(getDocs(q)).pipe(
-            map(snapshot => snapshot.docs.map(doc => doc.data()))
+            map(snapshot => snapshot.docs.map(doc => ({
+                id: doc.id,  // Use Firestore-generated document ID
+                ...doc.data()  // Include the rest of the document data
+            })))
         );
     }
 
@@ -107,6 +111,12 @@ export class QuizService {
         });
 
         return of({ success: true });
+    }
+
+    // Method to create a live quiz and save it in Firestore
+    createLiveQuiz(quizData: any): Observable<DocumentReference<any>> {
+        const quizCollection = collection(this.firestore, '/institutes/cynodon/live-quizzes');
+        return from(addDoc(quizCollection, quizData));  // Return DocumentReference
     }
 
     // Common methods for loading syllabus data

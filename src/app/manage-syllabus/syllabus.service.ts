@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Firestore, collection, collectionData, doc, getDoc, getDocs, writeBatch } from '@angular/fire/firestore';
-import { Observable, from, forkJoin, of } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { Observable, from, forkJoin, of, BehaviorSubject } from 'rxjs';
+import { map, switchMap, tap } from 'rxjs/operators';
 import { SyllabusNode } from './syllabus.interface';
 import { Logger } from '../logger.service';
 
@@ -9,123 +9,23 @@ import { Logger } from '../logger.service';
     providedIn: 'root'
 })
 export class SyllabusService {
+    private syllabusCache: BehaviorSubject<SyllabusNode[] | null> = new BehaviorSubject<SyllabusNode[] | null>(null);
+
     constructor(private firestore: Firestore, private logger: Logger) { }
 
-    getDistinctBoards(): Observable<{ id: string, name: string }[]> {
-        const boardsCollection = collection(this.firestore, 'syllabus/masters/boards');
+    // Caching mechanism for the syllabus data to avoid multiple Firestore calls
+    loadCompleteSyllabus(): Observable<SyllabusNode[]> {
+        if (this.syllabusCache.value) {
+            return of(this.syllabusCache.value);
+        }
 
-        // Log Firestore Read Operation
-        this.logger.addLog({
-            type: 'READ',
-            module: 'SyllabusService',
-            method: 'getDistinctBoards',
-            collection: 'syllabus/masters/boards',
-            dataSize: 0,  // Can calculate data size if needed
-            timestamp: new Date().toISOString(),
-        });
-
-        return from(getDocs(boardsCollection)).pipe(
-            map((snapshot) => {
-                return snapshot.docs.map(doc => ({ id: doc.id, name: doc.data()['name'] }));
-            })
-        );
-    }
-
-    getAllStandards(): Observable<SyllabusNode[]> {
-        const standardsCollection = collection(this.firestore, 'syllabus/masters/standards');
-
-        // Log Firestore Read Operation
-        this.logger.addLog({
-            type: 'READ',
-            module: 'SyllabusService',
-            method: 'getAllStandards',
-            collection: 'syllabus/masters/standards',
-            dataSize: 0,
-            timestamp: new Date().toISOString(),
-        });
-
-        return from(getDocs(standardsCollection)).pipe(
-            map((snapshot) => {
-                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as SyllabusNode);
-            })
-        );
-    }
-
-    getStandardsByBoard(boardId: string): Observable<{ id: string, name: string }[]> {
-        const standardsCollection = collection(this.firestore, 'syllabus/masters/standards');
-
-        // Log Firestore Read Operation
-        this.logger.addLog({
-            type: 'READ',
-            module: 'SyllabusService',
-            method: 'getStandardsByBoard',
-            collection: 'syllabus/masters/standards',
-            dataSize: 0,
-            timestamp: new Date().toISOString(),
-        });
-
-        return from(getDocs(standardsCollection)).pipe(
-            map((snapshot) => {
-                const standards = snapshot.docs
-                    .filter(doc => doc.data()['boardId'] === boardId)
-                    .map(doc => ({ id: doc.id, name: doc.data()['name'] }));
-                return standards;
-            })
-        );
-    }
-
-    getSubjectsByStandardAndBoard(standardId: string): Observable<{ id: string, name: string }[]> {
-        const subjectsCollection = collection(this.firestore, 'syllabus/masters/subjects');
-
-        // Log Firestore Read Operation
-        this.logger.addLog({
-            type: 'READ',
-            module: 'SyllabusService',
-            method: 'getSubjectsByStandardAndBoard',
-            collection: 'syllabus/masters/subjects',
-            dataSize: 0,
-            timestamp: new Date().toISOString(),
-        });
-
-        return from(getDocs(subjectsCollection)).pipe(
-            map((snapshot) => {
-                return snapshot.docs
-                    .filter(doc => doc.data()['standardId'] === standardId)
-                    .map(doc => ({ id: doc.id, name: doc.data()['name'] }));
-            })
-        );
-    }
-
-    getChaptersByStandardBoardAndSubject(subjectId: string): Observable<{ id: string, name: string }[]> {
-        const chaptersCollection = collection(this.firestore, 'syllabus/masters/chapters');
-
-        // Log Firestore Read Operation
-        this.logger.addLog({
-            type: 'READ',
-            module: 'SyllabusService',
-            method: 'getChaptersByStandardBoardAndSubject',
-            collection: 'syllabus/masters/chapters',
-            dataSize: 0,
-            timestamp: new Date().toISOString(),
-        });
-
-        return from(getDocs(chaptersCollection)).pipe(
-            map((snapshot) => {
-                return snapshot.docs
-                    .filter(doc => doc.data()['subjectId'] === subjectId)
-                    .map(doc => ({ id: doc.id, name: doc.data()['name'] }));
-            })
-        );
-    }
-
-    getCompleteSyllabusHierarchy(): Observable<SyllabusNode[]> {
         const syllabusMappingsCollection = collection(this.firestore, 'syllabus/syllabus-mapping/mappings');
 
         // Log Firestore Read Operation
         this.logger.addLog({
             type: 'READ',
             module: 'SyllabusService',
-            method: 'getCompleteSyllabusHierarchy',
+            method: 'loadCompleteSyllabus',
             collection: 'syllabus/syllabus-mapping/mappings',
             dataSize: 0,
             timestamp: new Date().toISOString(),
@@ -233,10 +133,68 @@ export class SyllabusService {
                 });
 
                 syllabusHierarchy.push(...Object.values(boardsMap));
+                this.syllabusCache.next(syllabusHierarchy);  // Cache the loaded syllabus
                 return syllabusHierarchy;
             })
         );
     }
+
+    getDistinctBoards(): Observable<{ id: string, name: string }[]> {
+        return this.syllabusCache.value ?
+            of(this.syllabusCache.value.map(board => ({ id: board.id, name: board.name }))) :
+            this.loadCompleteSyllabus().pipe(
+                map(syllabus => syllabus.map(board => ({ id: board.id, name: board.name })))
+            );
+    }
+
+    getAllStandards(): Observable<SyllabusNode[]> {
+        return this.syllabusCache.value ?
+            of(this.syllabusCache.value.flatMap(board => board.children || [])) :
+            this.loadCompleteSyllabus().pipe(
+                map(syllabus => syllabus.flatMap(board => board.children || []))
+            );
+    }
+
+    getStandardsByBoard(boardId: string): Observable<{ id: string, name: string }[]> {
+        return this.syllabusCache.value ?
+            of(this.syllabusCache.value.find(board => board.id === boardId)?.children || []) :
+            this.loadCompleteSyllabus().pipe(
+                map(syllabus => syllabus.find(board => board.id === boardId)?.children || [])
+            );
+    }
+
+    getSubjectsByStandardAndBoard(standardId: string): Observable<{ id: string, name: string }[]> {
+        return this.syllabusCache.value ?
+            of(this.syllabusCache.value.flatMap(board =>
+                board.children?.find(standard => standard.id === standardId)?.children || [])) :
+            this.loadCompleteSyllabus().pipe(
+                map(syllabus => syllabus.flatMap(board =>
+                    board.children?.find(standard => standard.id === standardId)?.children || []))
+            );
+    }
+
+    getChaptersByStandardBoardAndSubject(subjectId: string): Observable<{ id: string, name: string }[]> {
+        return this.syllabusCache.value ?
+            of(this.syllabusCache.value.flatMap(board =>
+                board.children?.flatMap(standard =>
+                    (standard.children?.find(subject => subject.id === subjectId)?.children || [])
+                ) || []
+            ).filter(chapter => chapter !== undefined)
+                .map(chapter => ({ id: chapter!.id, name: chapter!.name }))) :
+            this.loadCompleteSyllabus().pipe(
+                map(syllabus => syllabus.flatMap(board =>
+                    board.children?.flatMap(standard =>
+                        (standard.children?.find(subject => subject.id === subjectId)?.children || [])
+                    ) || []
+                ).filter(chapter => chapter !== undefined)
+                    .map(chapter => ({ id: chapter!.id, name: chapter!.name })))
+            );
+    }
+
+
+
+
+    // The rest of your existing methods remain unchanged...
 
     async clearCollection(collectionPath: string) {
         const collectionRef = collection(this.firestore, collectionPath);
@@ -298,5 +256,9 @@ export class SyllabusService {
             dataSize: data.length,
             timestamp: new Date().toISOString(),
         });
+    }
+
+    getCompleteSyllabusHierarchy(): Observable<SyllabusNode[]> {
+        return this.loadCompleteSyllabus(); // Reuse the method that loads and constructs the syllabus
     }
 }
