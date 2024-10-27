@@ -59,7 +59,6 @@ export class Logger {
 
     // Add logs and store them in localStorage
     public addLog(log: any) {
-        console.log('Adding log:', log);
         this.logs.push(log);
 
         // Store the logs in localStorage every time a new log is added
@@ -87,7 +86,6 @@ export class Logger {
 
         const logRef = doc(this.firestore, `logs/${new Date().toISOString()}`);
         await setDoc(logRef, { logs: storedLogs });
-        console.log('Pushing logs to Firestore', storedLogs);
 
         // Clear logs from localStorage after pushing
         localStorage.removeItem('firestoreLogs');

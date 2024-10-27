@@ -1,0 +1,28 @@
+.card-container {
+    display: flex;
+    flex-direction: row;
+    gap: 5%;
+    padding: 10% 24px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.quiz-types {
+    padding: 20px 10px;
+    border: 1px solid rgba(0, 0, 0, .2);
+    min-height: 30vh;
+    min-width: 260px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 34px;
+    border-radius: 1em;
+    transition: 0.3s ease;
+    line-height: normal;
+    flex-wrap: wrap;
+    margin: 12px 0;
+}
+
+.quiz-types:hover {
+    background-color: rgb(196, 255, 219);
+}

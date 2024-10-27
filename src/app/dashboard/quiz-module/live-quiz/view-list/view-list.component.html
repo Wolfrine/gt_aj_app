@@ -1,0 +1,118 @@
+<div class="quiz-card-container">
+    <div class="action-type-display">
+        <h2>View Live Quiz
+            <a [routerLink]="'/quiz/live-quiz/create'" *ngIf="(authService.getUserRole() | async) === 'admin'">
+                <mat-icon>add</mat-icon></a>
+        </h2>
+
+        <!-- Toggle to view older quizzes -->
+        <div class="quiz-toggle" *ngIf="(authService.getUserRole() | async) === 'admin'">
+            <mat-slide-toggle (change)="toggleOlderQuizzes($event.checked)">View Older</mat-slide-toggle>
+        </div>
+    </div>
+    <!-- Upcoming quizzes card view -->
+    <div *ngIf="!viewOlderQuizzes">
+        <h3>Upcoming</h3>
+        <div class="quiz-cards">
+            <mat-card *ngFor="let quiz of upcomingQuizzes" class="quiz-card">
+                <mat-card-header>
+                    <mat-card-title>
+                        {{ quiz.board }} >
+                        <span [innerHTML]="quiz.standard | ordinal"></span> >
+                        {{quiz.subject}}
+                    </mat-card-title>
+                    <mat-chip-set>
+                        <mat-chip class="chip"
+                            [ngClass]="{'live': quiz.status === 'live', 'upcoming': quiz.status === 'upcoming'}">
+                            {{ quiz.status === 'live' ? 'Live' : 'Upcoming' }}
+                        </mat-chip>
+                    </mat-chip-set>
+                </mat-card-header>
+                <mat-divider></mat-divider>
+                <mat-card-content>
+                    <p><strong>Chapters:</strong></p>
+                    <ol>
+                        <li *ngFor=" let chapter of quiz.chapters">{{ chapter}}</li>
+                    </ol>
+
+                    <!-- {{ quiz.chapters.join(', ') }} -->
+                    <p>
+                        <strong>Total Questions:</strong> {{ quiz.questionIds.length }}
+                        <span *ngIf="quiz.status === 'live'">
+                            (Currently on <span [innerHTML]="quiz.currentQuestion | ordinal"></span>)
+                        </span>
+                    </p>
+                    <p><strong>Timer Between Questions:</strong> {{ quiz.timer }} seconds</p>
+                    <p><strong>Participants:</strong> {{ quiz.participants ? quiz.participants.length : 0 }} </p>
+                    <!-- <ol>
+                        <li *ngFor=" let participant of quiz.participants">{{participant}}</li>
+                    </ol> -->
+                    <p><strong>Taking place on:</strong> {{quiz.date | date:'EEEE, MMMM d, y @ h:mm a' }} </p>
+
+                </mat-card-content>
+                <mat-divider></mat-divider>
+                <mat-card-actions>
+                    <mat-card-actions>
+                        <button *ngIf="!quiz.participants?.includes(currentUserEmail)" mat-raised-button color="primary"
+                            (click)="registerForQuiz(quiz.id)">
+                            Register
+                        </button>
+                        <!-- <button mat-raised-button color="accent" (click)="editQuiz(quiz.id)"
+                            *ngIf="(authService.getUserRole() | async) === 'admin'">
+                            Edit
+                        </button> -->
+                        <button *ngIf="quiz.status === 'upcoming' && (authService.getUserRole() | async) === 'admin'"
+                            mat-raised-button color="warn" (click)="startQuiz(quiz.id)">
+                            Start Now
+                        </button>
+                        <button *ngIf="quiz.status === 'live' && (authService.getUserRole() | async) === 'admin'"
+                            mat-raised-button color="warn" (click)="endQuiz(quiz.id)">
+                            End
+                        </button>
+                        <button *ngIf="quiz.status === 'upcoming' && quiz.participants?.includes(currentUserEmail)"
+                            mat-raised-button color="accent" (click)="joinQuiz(quiz.id)">
+                            Join
+                        </button>
+                    </mat-card-actions>
+                </mat-card-actions>
+            </mat-card>
+            <div *ngIf="upcomingQuizzes.length === 0">
+                <p>No upcoming quizzes</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Older quizzes card view -->
+    <div *ngIf="viewOlderQuizzes">
+        <h3>Older</h3>
+        <div class="quiz-cards">
+            <mat-card *ngFor="let quiz of olderQuizzes" class="quiz-card">
+                <mat-card-header>
+                    <mat-card-title>{{ quiz.board }} > {{ quiz.standard }} > {{ quiz.subject }}</mat-card-title>
+                    <mat-chip-set>
+                        <mat-chip class="older">
+                            Older
+                        </mat-chip>
+                    </mat-chip-set>
+                </mat-card-header>
+                <mat-divider></mat-divider>
+                <mat-card-content>
+                    <p><strong>Chapters:</strong> {{ quiz.chapters.join(', ') }}</p>
+                    <p><strong>Total Questions:</strong> {{ quiz.questionIds ? quiz.questionIds.length : 0 }}</p>
+                    <p><strong>Timer Between Questions:</strong> {{ quiz.timer }} seconds</p>
+                    <p><strong>Participants Registered:</strong> {{ quiz.participants }}</p>
+                    <p><strong>Date:</strong> {{quiz.date | date:'EEEE, MMMM d, y @ h:mm a' }} </p>
+                    <p><strong>End Time:</strong> {{ quiz.endTime | date:'medium'}} </p>
+                </mat-card-content>
+                <mat-divider></mat-divider>
+                <mat-card-actions>
+                    <button mat-raised-button color="primary" (click)="startQuiz(quiz.id)">Restart</button>
+                    <button mat-raised-button color="warn" (click)="deleteQuiz(quiz.id)">Delete</button>
+                </mat-card-actions>
+            </mat-card>
+            <div *ngIf="olderQuizzes.length === 0">
+                <p>No older quizzes found</p>
+            </div>
+        </div>
+    </div>
+</div>

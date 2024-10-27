@@ -1,0 +1,41 @@
+<div class="admin-dashboard-container">
+    <!-- Quiz Details -->
+    <div class="quiz-details">
+        <h2>{{ quizDetails?.board }} > {{ quizDetails?.standard }} > {{ quizDetails?.subject }}</h2>
+        <p><strong>Chapters:</strong> {{ quizDetails?.chapters?.join(', ') }}</p>
+        <button mat-raised-button color="primary">View Participants</button>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- List for Questions -->
+
+    <div class="questions-list">
+        <div *ngFor="let question of quizDetails.questions; let i = index" class="question-list-item">
+            <div class="question-text">{{ i + 1 }}. {{ question.question }}</div>
+            <div class="question-status">
+                <ng-container *ngIf="question.status === 'pending'">
+                    <span class="material-icons pending-icon">pending</span>
+                </ng-container>
+                <ng-container *ngIf="question.status === 'completed'">
+                    <span class="material-icons completed-icon">check_circle</span>
+                </ng-container>
+                <ng-container *ngIf="question.status === 'ongoing'">
+                    <app-quiz-timer [timerValue]="timerValue" (timerEnded)="onTimerEnded()"></app-quiz-timer>
+                </ng-container>
+            </div>
+            <div class="question-responses">{{ question.responses?.length || 0 }}/{{ totalParticipants }}</div>
+        </div>
+    </div>
+
+
+
+
+
+    <!-- Control Buttons -->
+    <div class="quiz-control-buttons">
+        <button *ngIf="!quizStarted" mat-raised-button color="primary" (click)="startQuiz()">Start Quiz</button>
+        <button *ngIf="quizStarted" mat-raised-button color="warn" (click)="endQuiz()">End Quiz</button>
+    </div>
+
+</div>

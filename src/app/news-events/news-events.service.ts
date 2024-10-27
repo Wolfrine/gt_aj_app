@@ -20,7 +20,7 @@ export class NewsService {
     }
 
     getNews(instituteId: string, lastDoc: any = null, pageSize: number = 10): Observable<any[]> {
-        console.log('getNews called');
+        // console.log('getNews called');
         const newsCollection = collection(this.firestore, `institutes/${instituteId}/newsEvents`);
         let q;
 
@@ -47,7 +47,7 @@ export class NewsService {
         const newsCollection = collection(this.firestore, `institutes/${instituteId}/newsEvents`);
         const q = query(newsCollection, orderBy('date', 'desc'), startAfter(lastVisibleDoc), limit(pageSize));
 
-        console.log('Fetching more news events...');
+        // console.log('Fetching more news events...');
         const querySnapshot = await getDocs(q);
 
         // Log Firestore Read Operation
@@ -68,10 +68,10 @@ export class NewsService {
 
     async addNews(instituteId: string, news: any): Promise<void> {
         try {
-            console.log(news);
+            // console.log(news);
             const newsCollection = collection(this.firestore, `institutes/${instituteId}/newsEvents`);
             await addDoc(newsCollection, news);
-            console.log('News added successfully');
+            // console.log('News added successfully');
 
             // Log Firestore Write Operation
             this.logger.addLog({
@@ -107,7 +107,7 @@ export class NewsService {
 
     getNewsEventById(instituteId: string, newsId: string): Observable<any> {
         const newsDoc = doc(this.firestore, `institutes/${instituteId}/newsEvents/${newsId}`);
-        console.log(newsDoc.id);
+        // console.log(newsDoc.id);
 
         // Log Firestore Read Operation
         this.logger.addLog({

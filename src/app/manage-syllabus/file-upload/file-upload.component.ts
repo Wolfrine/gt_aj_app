@@ -47,7 +47,7 @@ export class FileUploadComponent {
                 jsonData.push(rowData);
             });
 
-            console.log('Processed JSON Data:', jsonData);  // Log the JSON data to debug
+            // console.log('Processed JSON Data:', jsonData);  // Log the JSON data to debug
             this.processData(jsonData);
         };
         reader.readAsArrayBuffer(file);

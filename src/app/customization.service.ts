@@ -37,7 +37,7 @@ export class CustomizationService {
     }
 
     async getCustomization(subdomain: string): Promise<any> {
-        console.log('getCustomization called');
+        console.log('getCustomization');
         const cachedData = this.getCachedCustomization(subdomain);
         if (cachedData) {
             return cachedData;

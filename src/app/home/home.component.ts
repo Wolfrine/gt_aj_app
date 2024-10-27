@@ -39,7 +39,7 @@ export class HomeComponent implements OnInit {
         if (this.singInDashboard) {
         }
         else {
-            console.log('go to dashbard');
+            // console.log('go to dashbard');
             this.router.navigate(['/dashboard']);
         }
     }
@@ -94,7 +94,7 @@ export class HomeComponent implements OnInit {
         }
 
         this.authService.user$.subscribe(user => {
-            console.log(`AppComponent: user is ${user ? 'logged in' : 'not logged in'}`);
+            // console.log(`AppComponent: user is ${user ? 'logged in' : 'not logged in'}`);
             if (user) {
                 this.singInDashboard = false;
             }

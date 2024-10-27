@@ -61,7 +61,6 @@ export class AppComponent implements OnInit {
         private messagingService: MessagingService,
         @Inject(DOCUMENT) private document: Document
     ) {
-        console.log('AppComponent constructor');
     }
 
     homeroute() {
@@ -96,6 +95,7 @@ export class AppComponent implements OnInit {
 
     async ngOnInit() {
 
+
         this.authService.user$.subscribe(user => {
             if (user) {
                 this.user = user;
@@ -127,19 +127,32 @@ export class AppComponent implements OnInit {
         });
 
 
-
         if (isPlatformBrowser(this.platformId)) {
+            console.log('zzzzzzzzz');
             if ('serviceWorker' in navigator) {
                 try {
-                    const registration = await navigator.serviceWorker.ready;
-                    this.messagingService.requestPermission(registration);  // Call request permission with registration
+                    const registrationPromise: Promise<ServiceWorkerRegistration> = navigator.serviceWorker.ready;
+
+                    // Timeout to detect a hanging registration
+                    const timeout = new Promise<ServiceWorkerRegistration>((_, reject) =>
+                        setTimeout(() => reject(new Error('Service worker ready timed out')), 1000)
+                    );
+
+                    // Wait with timeout fallback
+                    const registration = await Promise.race([registrationPromise, timeout]) as ServiceWorkerRegistration;
+
+                    console.log('Service worker registered:', registration);
+                    this.messagingService.requestPermission(registration);
                 } catch (error) {
-                    console.error('Service Worker registration failed:', error);
+                    console.error('Service Worker registration failed or timed out:', error);
                 }
             } else {
                 console.warn('Service Workers are not supported by this browser.');
             }
+            console.log('zzzzzzzzz');  // This will print if there is no error
         }
+
+
 
         let subdomain = '';
         if (typeof window !== 'undefined') {
@@ -149,14 +162,13 @@ export class AppComponent implements OnInit {
         try {
             const data = await this.customizationService.getCustomization(subdomain);
             if (data) {
-                console.log(data);
+
                 this.title = data.websiteTitle;
                 this.themeColor = data.themeColor;
                 this.header = data.header;
                 this.applyThemeColor();
                 this.setFavicon(data.faviconUrl);
                 this.updateManifest(data.websiteTitle, this.themeColor);
-                console.log(data.status);
                 if (data.status === 'disabled' || data.status === 'pending') {
                     this.redirectToRegistration(subdomain);
                 } else {
@@ -173,7 +185,6 @@ export class AppComponent implements OnInit {
 
         // --- Show observation list when obsl variable is passed from URL
         this.route.queryParams.subscribe(params => {
-            console.log(params['obsl']);
             this.showObservationList = params['obsl'] === '1';
         });
     }
@@ -213,7 +224,6 @@ export class AppComponent implements OnInit {
     }
 
     private setFavicon(url: string): void {
-        console.log(url);
         const link: HTMLLinkElement = document.querySelector("link[rel*='icon']") || document.createElement('link');
         link.type = 'image/x-icon';
         link.rel = 'shortcut icon';
@@ -231,7 +241,6 @@ export class AppComponent implements OnInit {
     // Method to update manifest dynamically
     private updateManifest(appName: string, themeColor: string) {
         const baseUrl = window.location.origin;  // Get base URL of the site
-
         const manifest = {
             "name": appName || "Default Name",
             "short_name": appName || "Default Name",

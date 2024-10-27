@@ -1,0 +1,11 @@
+.radial-timer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .timer-text {
+        position: absolute;
+        font-weight: bold;
+        color: #3f51b5;
+    }
+}

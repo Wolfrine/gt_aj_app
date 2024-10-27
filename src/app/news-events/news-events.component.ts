@@ -47,14 +47,14 @@ export class NewsEventsComponent implements OnInit {
                 this.lastVisibleDoc = news[news.length - 1];
             }
             this.newsList = news;
-            console.log('News list updated:', this.newsList);
+            // console.log('News list updated:', this.newsList);
         });
     }
 
     loadMoreNews() {
         if (this.lastVisibleDoc) {
             this.newsService.getMoreNews(this.instituteId, this.lastVisibleDoc).then(news => {
-                console.log('Fetched more news:', news);
+                // console.log('Fetched more news:', news);
                 if (news.length > 0) {
                     this.lastVisibleDoc = news[news.length - 1];
                     this.newsList = [...this.newsList, ...news];

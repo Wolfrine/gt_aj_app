@@ -13,10 +13,10 @@ export class SyllabusService {
 
     constructor(private firestore: Firestore, private logger: Logger) { }
 
-    // Caching mechanism for the syllabus data to avoid multiple Firestore calls
+    // Ensure syllabus is loaded only once and cached
     loadCompleteSyllabus(): Observable<SyllabusNode[]> {
         if (this.syllabusCache.value) {
-            return of(this.syllabusCache.value);
+            return of(this.syllabusCache.value); // Return cached syllabus
         }
 
         const syllabusMappingsCollection = collection(this.firestore, 'syllabus/syllabus-mapping/mappings');
@@ -137,6 +137,11 @@ export class SyllabusService {
                 return syllabusHierarchy;
             })
         );
+    }
+
+    // Method to ensure syllabus is only loaded once when needed
+    ensureSyllabusLoaded(): Observable<SyllabusNode[]> {
+        return this.loadCompleteSyllabus();
     }
 
     getDistinctBoards(): Observable<{ id: string, name: string }[]> {

@@ -3,6 +3,13 @@
     --theme-color-dark: hsl(231, 48%, 43%); // Darker shade of the theme color (adjusted lightness)
 }
 
+::ng-deep sup {
+    font-size: 50%;
+    opacity: 0.8;
+    vertical-align: super;
+    /* Correct vertical alignment */
+}
+
 .navbar {
     background-color: var(--theme-color);
     color: white;

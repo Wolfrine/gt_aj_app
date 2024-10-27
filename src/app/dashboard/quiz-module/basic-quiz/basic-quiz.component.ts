@@ -7,7 +7,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatSelectModule } from '@angular/material/select';
 import { QuizService } from '../quiz.service';
 import { SyllabusService } from '../../../manage-syllabus/syllabus.service';
-import { BaseComponent } from '../quiz-base.component';
+import { QuizModuleComponent } from '../quiz-module.component';
 
 @Component({
     selector: 'app-basic-quiz',
@@ -23,7 +23,7 @@ import { BaseComponent } from '../quiz-base.component';
     templateUrl: './basic-quiz.component.html',
     styleUrls: ['./basic-quiz.component.scss'],
 })
-export class BasicQuizComponent extends BaseComponent implements OnInit {
+export class BasicQuizComponent extends QuizModuleComponent implements OnInit {
     currentQuestionIndex = 0;
     userAnswers: any[] = [];
 

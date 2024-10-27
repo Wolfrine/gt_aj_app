@@ -2,13 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { QuizService } from '../quiz.service';
 import { SyllabusService } from '../../../manage-syllabus/syllabus.service';
-import { BaseComponent } from '../quiz-base.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { QuizModuleComponent } from '../quiz-module.component';
 
 @Component({
     selector: 'app-manage-quiz-databank',
@@ -25,7 +25,7 @@ import { MatSelectModule } from '@angular/material/select';
     templateUrl: './manage-quiz-databank.component.html',
     styleUrls: ['./manage-quiz-databank.component.scss'],
 })
-export class ManageQuizDatabankComponent extends BaseComponent implements OnInit {
+export class ManageQuizDatabankComponent extends QuizModuleComponent implements OnInit {
 
     constructor(
         fb: FormBuilder,

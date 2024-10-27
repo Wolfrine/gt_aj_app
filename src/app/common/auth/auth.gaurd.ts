@@ -18,7 +18,6 @@ export class AuthGuard implements CanActivate {
             map(user => !!user),
             tap(loggedIn => {
                 if (!loggedIn) {
-                    console.log(state.url);
                     this.authService.redirectUrl = state.url;  // Capture the requested URL
                     this.authService.redirectToLogin();
                 }

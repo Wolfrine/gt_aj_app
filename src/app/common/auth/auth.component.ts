@@ -18,7 +18,6 @@ export class AuthComponent {
     onGoogleSignIn() {
         this.authService.googleSignIn()
             .then(() => {
-                console.log('Successfully logged in');
                 if (this.dialogRef) {
                     this.dialogRef.close();
                 }

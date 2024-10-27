@@ -10,7 +10,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import * as ExcelJS from 'exceljs';
-import { BaseComponent } from '../quiz-base.component';
+import { QuizModuleComponent } from '../quiz-module.component';
 
 @Component({
     selector: 'app-view-quiz-databank',
@@ -28,7 +28,7 @@ import { BaseComponent } from '../quiz-base.component';
     templateUrl: './view-quiz-databank.component.html',
     styleUrls: ['./view-quiz-databank.component.scss'],
 })
-export class ViewQuizDatabankComponent extends BaseComponent implements OnInit {
+export class ViewQuizDatabankComponent extends QuizModuleComponent implements OnInit {
     displayedColumns: string[] = ['question', 'options'];
 
     constructor(

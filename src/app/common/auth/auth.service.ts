@@ -52,7 +52,13 @@ export class AuthService {
         this.user$ = this.userSubject.asObservable();
         // Fetch user once on initialization
         this.getAuthState().subscribe(); // Subscribe to getAuthState to fetch user data once
+
+        this.authState$.subscribe((user) => {
+            console.log('Auth State User:', user);
+        });
     }
+
+
 
     // This method caches the result of authState and reuses it across the application
     getAuthState(): Observable<UserWithRole | null> {
@@ -215,6 +221,7 @@ export class AuthService {
     }
 
     saveFCMToken(user: FirebaseUser) {
+        console.log('FCM token save called');
         this.messagingService.getToken().then((token) => {
             if (token) {
                 const userRef = doc(this.firestore, `institutes/${this.customizationService.getSubdomainFromUrl()}/users/${user.email}`);

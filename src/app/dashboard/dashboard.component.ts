@@ -27,7 +27,7 @@ export class DashboardComponent implements OnInit {
         { "title": "Add Activity", "imageUrl": "./assets/activities.png", "color": "rgb(245,245,220)", "route": "/add-activity" },
         { "title": "Manage Syllabus", "imageUrl": "./assets/manage-syllabus.png", "color": "rgb(245,220,245)", "route": "/manage-syllabus", "access": "admin" },
         { "title": "Manage Users", "imageUrl": "./assets/manage-users.png", "color": "rgb(220,245,245)", "route": "/manage-users", "access": "admin" },
-        { "title": "Take Quiz", "imageUrl": "./assets/quiz.png", "color": "rgb(235,255,225)", "route": "/quiz/basic-quiz" },
+        { "title": "Take Quiz", "imageUrl": "./assets/quiz.png", "color": "rgb(235,255,225)", "route": "/quiz" },
         { "title": "Manage Questionbank", "imageUrl": "./assets/manage-users.webp", "color": "rgb(225,230,245)", "route": "/quiz/view-quiz-databank", "access": "admin" },
         { "title": "Add news", "imageUrl": "./assets/manage-syllabus.png", "color": "rgb(245,220,245)", "route": "/add-news", "access": "admin" },
     ];
@@ -71,14 +71,14 @@ export class DashboardComponent implements OnInit {
             this.installPromptEvent.prompt(); // Show the native install prompt
             this.installPromptEvent.userChoice.then((choiceResult: { outcome: string }) => {
                 if (choiceResult.outcome === 'accepted') {
-                    console.log('User accepted the PWA installation');
+                    // console.log('User accepted the PWA installation');
                     this.user$.subscribe(user => {
                         if (user) {
                             this.savePWAStatus(user, true); // Save the status after installation
                         }
                     });
                 } else {
-                    console.log('User dismissed the PWA installation');
+                    // console.log('User dismissed the PWA installation');
                 }
                 this.installPromptEvent = null; // Reset the event
                 this.showInstallWidget = false; // Hide the install widget after interaction
@@ -95,7 +95,7 @@ export class DashboardComponent implements OnInit {
         const storedStatus = localStorage.getItem(localStorageKey);
 
         if (storedStatus !== null) {
-            console.log('Using cached PWA status from localStorage:', storedStatus);
+            // console.log('Using cached PWA status from localStorage:', storedStatus);
             this.showInstallWidget = storedStatus === 'false';
         } else {
             // Fetch from Firestore
@@ -120,7 +120,7 @@ export class DashboardComponent implements OnInit {
             const userDocRef = doc(this.firestore, `institutes/${this.subdomain}/users/${user.email}`);
             updateDoc(userDocRef, { IsPWAInstalled: isPWAInstalled })
                 .then(() => {
-                    console.log(`PWA status updated for ${user.email} in ${this.subdomain}`);
+                    // console.log(`PWA status updated for ${user.email} in ${this.subdomain}`);
                     localStorage.setItem(localStorageKey, String(isPWAInstalled)); // Update local storage
                 })
                 .catch(error => console.error('Error updating PWA status:', error));

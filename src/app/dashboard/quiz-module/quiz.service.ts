@@ -1,20 +1,25 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, collectionData, addDoc, doc, setDoc, deleteDoc, query, where, getDocs, writeBatch, DocumentReference } from '@angular/fire/firestore';
-import { Observable, from, of } from 'rxjs';
+import { Firestore, collection, collectionData, addDoc, doc, setDoc, deleteDoc, query, where, getDocs, writeBatch, DocumentReference, updateDoc, Timestamp, getDoc, docData, arrayUnion } from '@angular/fire/firestore';
+import { Observable, from, of, combineLatest, forkJoin } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { SyllabusService } from '../../manage-syllabus/syllabus.service';
 import { Logger } from '../../logger.service';  // Import Logger service
+import { CustomizationService } from '../../customization.service';
 
 @Injectable({
     providedIn: 'root',
 })
 export class QuizService {
-    constructor(private firestore: Firestore, private syllabusService: SyllabusService, private logger: Logger) { }
+    constructor(
+        private firestore: Firestore,
+        private syllabusService: SyllabusService,
+        private logger: Logger,
+        private customizationService: CustomizationService
+    ) { }
 
     getQuestionsByChapter(chapterIds: string[]): Observable<any[]> {
         const quizCollection = collection(this.firestore, 'quizbank');
-        const q = query(quizCollection, where('chapterId', 'in', chapterIds));  // Handle array of chapterIds
-
+        const q = query(quizCollection, where('chapterId', 'in', chapterIds));
 
         // Log Firestore Read Operation
         this.logger.addLog({
@@ -22,22 +27,20 @@ export class QuizService {
             module: 'QuizService',
             method: 'getQuestionsByChapter',
             collection: 'quizbank',
-            dataSize: 0, // Can calculate data size if needed
+            dataSize: 0,
             timestamp: new Date().toISOString(),
         });
 
         return from(getDocs(q)).pipe(
             map(snapshot => snapshot.docs.map(doc => ({
-                id: doc.id,  // Use Firestore-generated document ID
-                ...doc.data()  // Include the rest of the document data
+                id: doc.id,
+                ...doc.data()
             })))
         );
     }
 
     addQuestion(question: any): Observable<any> {
         const quizCollection = collection(this.firestore, 'quizbank');
-
-        // Log Firestore Write Operation
         this.logger.addLog({
             type: 'WRITE',
             module: 'QuizService',
@@ -46,7 +49,6 @@ export class QuizService {
             dataSize: JSON.stringify(question).length,
             timestamp: new Date().toISOString(),
         });
-
         return from(addDoc(quizCollection, question));
     }
 
@@ -59,7 +61,6 @@ export class QuizService {
             batch.set(docRef, question);
         });
 
-        // Log Firestore Batch Write Operation
         this.logger.addLog({
             type: 'BATCH_WRITE',
             module: 'QuizService',
@@ -75,8 +76,6 @@ export class QuizService {
     deleteQuestion(question: any): Observable<any> {
         const quizCollection = collection(this.firestore, 'quizbank');
         const q = query(quizCollection, where('question', '==', question.question));
-
-        // Log Firestore Delete Operation
         this.logger.addLog({
             type: 'DELETE',
             module: 'QuizService',
@@ -99,8 +98,6 @@ export class QuizService {
 
     submitQuiz(answers: any[]): Observable<any> {
         console.log('Submitting quiz answers:', answers);
-
-        // Log Quiz Submission (Can be customized as needed)
         this.logger.addLog({
             type: 'SUBMIT',
             module: 'QuizService',
@@ -109,30 +106,106 @@ export class QuizService {
             dataSize: JSON.stringify(answers).length,
             timestamp: new Date().toISOString(),
         });
-
         return of({ success: true });
     }
 
-    // Method to create a live quiz and save it in Firestore
     createLiveQuiz(quizData: any): Observable<DocumentReference<any>> {
-        const quizCollection = collection(this.firestore, '/institutes/cynodon/live-quizzes');
-        return from(addDoc(quizCollection, quizData));  // Return DocumentReference
+        const quizCollection = collection(this.firestore, `/institutes/${this.customizationService.getSubdomainFromUrl()}/quiz`);
+        const liveQuizData = { ...quizData, quiz_type: 'live' };
+        return from(addDoc(quizCollection, liveQuizData));
     }
 
-    // Common methods for loading syllabus data
-    loadBoards(): Observable<{ id: string, name: string }[]> {
-        return this.syllabusService.getDistinctBoards();
+    updateQuiz(instituteId: string, quizId: string, updatedQuizData: any): Observable<void> {
+        const quizDocRef = doc(this.firestore, `/institutes/${instituteId}/quiz/${quizId}`);
+        return from(updateDoc(quizDocRef, updatedQuizData));
     }
 
-    loadStandards(boardId: string): Observable<{ id: string, name: string }[]> {
-        return this.syllabusService.getStandardsByBoard(boardId);
+    deleteQuiz(instituteId: string, quizId: string): Observable<void> {
+        const quizDocRef = doc(this.firestore, `/institutes/${instituteId}/quiz/${quizId}`);
+        return from(deleteDoc(quizDocRef));
     }
 
-    loadSubjects(standardId: string): Observable<{ id: string, name: string }[]> {
-        return this.syllabusService.getSubjectsByStandardAndBoard(standardId);
+    getAllQuizzes(instituteId: string): Observable<any[]> {
+        const quizzesCollection = collection(this.firestore, `/institutes/${instituteId}/quiz`);
+        return collectionData(quizzesCollection, { idField: 'id' }).pipe(
+            map((quizzes: any[]) => this.calculateQuizStatus(quizzes))
+        );
     }
 
-    loadChapters(subjectId: string): Observable<any[]> {
-        return this.syllabusService.getChaptersByStandardBoardAndSubject(subjectId);
+    getQuizById(instituteId: string, quizId: string): Observable<any> {
+        const quizDocRef = doc(this.firestore, `/institutes/${instituteId}/quiz/${quizId}`);
+
+        return docData(quizDocRef).pipe(
+            switchMap(quizData => {
+                if (!quizData || !quizData['questionIds']) {
+                    return of(quizData);
+                }
+
+                const questionCollectionRef = collection(this.firestore, 'quizbank');
+                const questionFetches = quizData['questionIds'].map((questionId: string) =>
+                    getDoc(doc(questionCollectionRef, questionId)).then(snapshot => ({
+                        id: questionId,
+                        ...snapshot.data()
+                    }))
+                );
+
+                return forkJoin(questionFetches).pipe(
+                    map(questions => ({
+                        ...quizData,
+                        questions
+                    }))
+                );
+            })
+        );
     }
+
+    updateCurrentQuestionIndex(quizId: string, currentQuestionIndex: number): Observable<void> {
+        const quizDocRef = doc(this.firestore, `/institutes/${this.customizationService.getSubdomainFromUrl()}/quiz/${quizId}`);
+        return from(updateDoc(quizDocRef, { currentQuestion: currentQuestionIndex }));
+    }
+
+    listenToCurrentQuestionIndex(quizId: string): Observable<number> {
+        const quizDocRef = doc(this.firestore, `/institutes/${this.customizationService.getSubdomainFromUrl()}/quiz/${quizId}`);
+        return docData(quizDocRef).pipe(map(doc => doc?.['currentQuestion'] || 0));
+    }
+
+    getAllLiveQuizzes(instituteId: string): Observable<any[]> {
+        const quizzesCollection = collection(this.firestore, `/institutes/${instituteId}/quiz`);
+        const q = query(quizzesCollection, where('quiz_type', '==', 'live'));
+
+        return collectionData(q, { idField: 'id' }).pipe(
+            map((quizzes: any[]) => this.calculateQuizStatus(quizzes))
+        );
+    }
+
+    calculateQuizStatus(quizzes: any[]): any[] {
+        return quizzes.map(quiz => {
+            const now = new Date();
+            const quizDateTime = quiz.date instanceof Timestamp ? quiz.date.toDate() : new Date(quiz.date);
+
+            quiz.currentQuestion = quiz.currentQuestion || 0;
+
+            if (quiz.currentQuestion === 0 && quizDateTime >= now) {
+                quiz.status = 'upcoming';
+            } else if (quiz.currentQuestion > 0 && quiz.currentQuestion < quiz.questionIds.length && !quiz.endTime) {
+                quiz.status = 'live';
+            } else if (quiz.endTime) {
+                quiz.endTime = quiz.endTime instanceof Timestamp ? quiz.endTime.toDate() : quiz.endTime;
+                quiz.status = 'completed';
+            } else {
+                quiz.endTime = quiz.endTime instanceof Timestamp ? quiz.endTime.toDate() : quiz.endTime;
+                quiz.status = 'unknown';
+            }
+
+            return quiz;
+        });
+    }
+
+    addParticipant(instituteId: string, quizId: string, participantEmail: string): Observable<void> {
+        const quizDocRef = doc(this.firestore, `/institutes/${instituteId}/quiz/${quizId}`);
+        return from(updateDoc(quizDocRef, {
+            participants: arrayUnion(participantEmail)  // Add user to participants array
+        }));
+    }
+
 }

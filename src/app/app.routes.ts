@@ -22,6 +22,10 @@ import { ViewQuizDatabankComponent } from './dashboard/quiz-module/view-quiz-dat
 import { AddActivityComponent } from './dashboard/add-activity/add-activity.component';
 import { GetLogsComponent } from './common/get-logs/get-logs.component';
 import { CreateLiveQuizComponent } from './dashboard/quiz-module/live-quiz/create/create.component';
+import { ViewQuizComponent } from './dashboard/quiz-module/live-quiz/view-list/view-list.component';
+import { AdminDashboardComponent } from './dashboard/quiz-module/live-quiz/admin-dashboard/admin-dashboard.component';
+import { QuizModuleComponent } from './dashboard/quiz-module/quiz-module.component';
+import { ParticipantDashboardComponent } from './dashboard/quiz-module/live-quiz/participant-dashboard/participant-dashboard.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/home', pathMatch: 'full' },
@@ -42,7 +46,11 @@ export const routes: Routes = [
     { path: 'add-activity', component: AddActivityComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRoles: ['teacher', 'student', 'admin'], title: 'Add class activity' } },
     { path: 'get-logs', component: GetLogsComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRoles: ['admin'], title: 'Get Logs' } },
     { path: 'documentation', component: MarkdownComponent, data: { title: 'Documentation' } },
-    { path: 'quiz/live-quiz/create', component: CreateLiveQuizComponent, data: { title: 'Create Live Quiz' } },
+    { path: 'quiz', component: QuizModuleComponent, canActivate: [AuthGuard, RoleGuard], data: { title: 'Quiz Types' } },
+    { path: 'quiz/live-quiz/create', component: CreateLiveQuizComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRoles: ['admin'], title: 'Create Live Quiz' } },
+    { path: 'quiz/live-quiz/view-list', component: ViewQuizComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRoles: ['admin', 'student'], title: 'View Live Quiz' } },
+    { path: 'quiz/live-quiz/admin-dashboard', component: AdminDashboardComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRoles: ['admin'], title: 'Admin Live Quiz Dashboard' } },
+    { path: 'quiz/live-quiz/participant-dashboard', component: ParticipantDashboardComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRoles: ['admin', 'student'], title: 'Live Quiz' } },
 
     { path: '**', component: Error404Component, data: { title: '404 not found' } }
 ];

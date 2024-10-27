@@ -27,7 +27,7 @@ export class RoleGuard implements CanActivate {
         state: RouterStateSnapshot
     ): Observable<boolean> {
         const expectedRoles = next.data['expectedRoles'] as string[] || [];
-        console.log('expectedRoles in canActivate:', expectedRoles);
+        // console.log('expectedRoles in canActivate:', expectedRoles);
 
         return this.authService.getAuthState().pipe(  // Use getAuthState instead of isAuthenticated
             switchMap(user => {
@@ -39,8 +39,8 @@ export class RoleGuard implements CanActivate {
                 return this.authService.getUserRole().pipe(
                     take(1),  // Ensure we only take the first emitted value
                     switchMap(role => {
-                        console.log('role guard:', role);
-                        console.log('expectedRoles:', expectedRoles);
+                        // console.log('role guard:', role);
+                        // console.log('expectedRoles:', expectedRoles);
 
                         if (!role || role === 'user') {
                             return of(false);
