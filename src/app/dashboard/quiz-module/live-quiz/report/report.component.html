@@ -1,0 +1,76 @@
+<div class="report-container">
+    <!-- Quiz Details Section -->
+    <div class="quiz-details">
+        <h2>{{ quizDetails?.board }} > {{ quizDetails?.standard }} > {{ quizDetails?.subject }}</h2>
+        <p><strong>Chapters:</strong> {{ quizDetails?.chapters?.join(', ') }}</p>
+        <p><strong>Date:</strong> {{ quizDetails?.date | date: 'EEEE, MMMM d, y @ h:mm a' }}</p>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- Participants List -->
+    <div class="participants">
+        <h3>Participants</h3>
+        <ul>
+            <li *ngFor="let participant of participants">{{ participant }}</li>
+        </ul>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- Questions and Responses Section -->
+    <div class="questions-list">
+        <h3>Questions and Responses</h3>
+        <mat-card *ngFor="let question of questionsWithResponses; let i = index" class="question-card">
+            <mat-card-header>
+                <mat-card-title>Question {{ i + 1 }}: {{ question.question }}</mat-card-title>
+            </mat-card-header>
+            <mat-divider></mat-divider>
+            <mat-card-content>
+                <!-- Options List with Correct Answer Highlighted -->
+                <ol class="options-list">
+                    <li *ngFor="let option of question.options; let j = index"
+                        [ngClass]="{'correct-option': (j + 1) === question.correctOption}">
+                        {{ option }}
+                    </li>
+                </ol>
+
+                <!-- Participant Responses -->
+                <ul class="responses-list">
+                    <li *ngFor="let response of question.responses"
+                        [ngClass]="{'correct': response.isCorrect, 'incorrect': !response.isCorrect}">
+                        <strong>{{ response.userId }}</strong> | answered: {{ response.selectedAnswer }} |
+                        <span *ngIf="response.isCorrect" class="correct-label">Correct</span>
+                        <span *ngIf="!response.isCorrect" class="incorrect-label">Incorrect</span>
+                        <span class="time-taken"> | Time Taken: {{ response.timeTaken }} ms</span>
+                    </li>
+                </ul>
+            </mat-card-content>
+        </mat-card>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- Leaderboard Section -->
+    <div class="leaderboard">
+        <h3>Top 5 Participants</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Participant</th>
+                    <th>Correct Answers</th>
+                    <th>Total Time (ms)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let participant of leaderboard; let rank = index" [ngClass]="{'top-ranked': rank < 3}">
+                    <td>{{ rank + 1 }}</td>
+                    <td>{{ participant.userId }}</td>
+                    <td>{{ participant.correct }}</td>
+                    <td>{{ participant.totalTime }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

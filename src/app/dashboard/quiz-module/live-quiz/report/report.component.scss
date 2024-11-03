@@ -1,0 +1,60 @@
+.report-container {
+    padding: 8px;
+
+    .quiz-details,
+    .participants,
+    .questions-list,
+    .leaderboard {
+        margin-bottom: 20px;
+    }
+
+    .question-card {
+        margin-bottom: 15px;
+    }
+
+    .correct-label {
+        color: green;
+        font-weight: bold;
+    }
+
+    .incorrect-label {
+        color: red;
+        font-weight: bold;
+    }
+
+    .time-taken {
+        font-size: 0.9em;
+        color: #666;
+    }
+
+    .top-ranked {
+        background-color: #f0f8ff;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+
+        th,
+        td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+    }
+}
+
+.report-container .options-list li.correct-option {
+    background-color: #d4edda;
+    /* light green */
+    font-weight: bold;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+.report-container .responses-list li.correct {
+    color: green;
+}
+
+.report-container .responses-list li.incorrect {
+    color: red;
+}

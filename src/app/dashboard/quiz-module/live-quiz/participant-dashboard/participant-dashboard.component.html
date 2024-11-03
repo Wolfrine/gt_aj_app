@@ -1,26 +1,29 @@
-<div *ngIf="!currentQuestion && !quizOwner" class="message">
-    {{ message }}
-</div>
-<pre>{{quizDetails.question | json }}</pre>
+<div class="container-quiz">
+    <div *ngIf="!currentQuestion && !quizOwner" class="message">
+        {{ message }}
+    </div>
 
-<mat-card *ngIf="currentQuestion && !waitingForNextQuestion">
-    <mat-card-header>
-        <mat-card-title>{{ currentQuestion.question }} <app-quiz-timer [timerValue]="participantTimer"
-                (timerEnded)="handleTimerEnd()"></app-quiz-timer></mat-card-title>
-    </mat-card-header>
-    <mat-divider></mat-divider>
-    <mat-card-content>
-        <ol>
-            <li *ngFor="let option of currentQuestion.options" (click)="submitAnswer(option)">
-                {{ option }}
-            </li>
-        </ol>
-    </mat-card-content>
+    <mat-card *ngIf="currentQuestion && !waitingForNextQuestion">
+        <mat-card-header>
+            <mat-card-title>
+                {{ currentQuestion.question }}
+                <app-quiz-timer [timerValue]="participantTimer" (timerEnded)="handleTimerEnd()"></app-quiz-timer>
+            </mat-card-title>
+        </mat-card-header>
+        <mat-divider></mat-divider>
+        <mat-card-content>
+            <ol>
+                <li *ngFor="let option of currentQuestion.options; let i = index">
+                    <button mat-raised-button color="primary" (click)="handleAnswerSelection(i + 1)"
+                        [disabled]="answerSubmitted">
+                        {{ option }}
+                    </button>
+                </li>
+            </ol>
+        </mat-card-content>
+    </mat-card>
 
-
-
-</mat-card>
-
-<div *ngIf="waitingForNextQuestion" class="message">
-    {{ message }}
+    <div *ngIf="waitingForNextQuestion" class="message">
+        {{ message }}
+    </div>
 </div>

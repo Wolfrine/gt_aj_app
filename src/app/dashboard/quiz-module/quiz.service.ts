@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, collectionData, addDoc, doc, setDoc, deleteDoc, query, where, getDocs, writeBatch, DocumentReference, updateDoc, Timestamp, getDoc, docData, arrayUnion } from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, addDoc, doc, setDoc, deleteDoc, query, where, getDocs, writeBatch, DocumentReference, updateDoc, Timestamp, getDoc, docData, arrayUnion, orderBy, limit } from '@angular/fire/firestore';
 import { Observable, from, of, combineLatest, forkJoin } from 'rxjs';
 import { map, switchMap, catchError } from 'rxjs/operators';
 import { SyllabusService } from '../../manage-syllabus/syllabus.service';
@@ -352,6 +352,70 @@ export class QuizService {
 
             return quiz;
         });
+    }
+
+    submitAnswer(quizId: string, sessionId: string, answerData: any): Observable<void | null> {
+        const questionId = answerData.questionID; // Use the questionID from answerData
+        const responseDocRef = doc(this.firestore, `/institutes/${this.customizationService.getSubdomainFromUrl()}/quiz/${quizId}/quizResponses/${sessionId}`);
+
+        return from(updateDoc(responseDocRef, {
+            [questionId]: arrayUnion(answerData) // Add the answer data to the array for this specific questionId
+        })).pipe(
+            catchError(error => {
+                // If the document doesn't exist yet, create it with initial structure
+                if (error.code === 'not-found') {
+                    const initialData = {
+                        sessionId: sessionId,
+                        createdOn: new Date().toISOString(),
+                        [questionId]: [answerData] // Initialize with the first answer for this questionId
+                    };
+                    return from(setDoc(responseDocRef, initialData));
+                } else {
+                    console.error("Error submitting answer:", error);
+                    return of(null);
+                }
+            })
+        );
+    }
+
+    getSessionResponses(quizId: string, sessionId: string): Observable<Record<string, any>> {
+        const responseDocRef = doc(this.firestore, `/institutes/${this.customizationService.getSubdomainFromUrl()}/quiz/${quizId}/quizResponses/${sessionId}`);
+
+        return docData(responseDocRef).pipe(
+            map(responseData => {
+                if (!responseData) {
+                    console.warn("No response data found for session:", sessionId);
+                    return {}; // Return an empty object if no data is found
+                }
+
+                return Object.keys(responseData)
+                    .filter(key => key !== 'sessionId' && key !== 'createdOn')
+                    .reduce((acc: Record<string, any>, questionId) => {
+                        acc[questionId] = responseData[questionId];
+                        return acc;
+                    }, {});
+            }),
+            catchError(error => {
+                console.error("Error fetching session responses:", error);
+                return of({}); // Return an empty object in case of an error
+            })
+        );
+    }
+
+    getLatestSessionId(quizId: string): Observable<string | null> {
+        const sessionCollection = collection(this.firestore, `/institutes/${this.customizationService.getSubdomainFromUrl()}/quiz/${quizId}/quizResponses`);
+        const latestSessionQuery = query(sessionCollection, orderBy('createdOn', 'desc'), limit(1));
+
+        return from(getDocs(latestSessionQuery)).pipe(
+            map(snapshot => {
+                const doc = snapshot.docs[0];
+                return doc ? doc.id : null;
+            }),
+            catchError(error => {
+                console.error("Error fetching latest session ID:", error);
+                return of(null);
+            })
+        );
     }
 
 

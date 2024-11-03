@@ -6,7 +6,7 @@
         </h2>
 
         <!-- Toggle to view older quizzes -->
-        <div class="quiz-toggle" *ngIf="(authService.getUserRole() | async) === 'admin'">
+        <div class="quiz-toggle">
             <mat-slide-toggle (change)="toggleOlderQuizzes($event.checked)">View Older</mat-slide-toggle>
         </div>
     </div>
@@ -90,9 +90,7 @@
                 <mat-card-header>
                     <mat-card-title>{{ quiz.board }} > {{ quiz.standard }} > {{ quiz.subject }}</mat-card-title>
                     <mat-chip-set>
-                        <mat-chip class="older">
-                            Older
-                        </mat-chip>
+                        <mat-chip class="older">Older</mat-chip>
                     </mat-chip-set>
                 </mat-card-header>
                 <mat-divider></mat-divider>
@@ -106,8 +104,14 @@
                 </mat-card-content>
                 <mat-divider></mat-divider>
                 <mat-card-actions>
-                    <button mat-raised-button color="primary" (click)="startQuiz(quiz.id)">Restart</button>
-                    <button mat-raised-button color="warn" (click)="deleteQuiz(quiz.id)">Delete</button>
+                    <button mat-raised-button color="primary" (click)="startQuiz(quiz.id)"
+                        *ngIf="(authService.getUserRole() | async) === 'admin'">Restart</button>
+                    <button mat-raised-button color="warn" (click)="deleteQuiz(quiz.id)"
+                        *ngIf="(authService.getUserRole() | async) === 'admin'">Delete</button>
+                    <button mat-raised-button color="accent" [routerLink]="['/quiz/live-quiz/report']"
+                        [queryParams]="{ quizId: quiz.id }">
+                        View Report
+                    </button>
                 </mat-card-actions>
             </mat-card>
             <div *ngIf="olderQuizzes.length === 0">
@@ -115,4 +119,5 @@
             </div>
         </div>
     </div>
+
 </div>

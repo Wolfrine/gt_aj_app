@@ -11,7 +11,7 @@ import { QuizTimerComponent } from '../../../../common/components/quiz-timer/qui
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../../../common/auth/auth.service';
 import { Timestamp } from '@angular/fire/firestore';
-import { Logger } from '../../../../logger.service';  // Import Logger service
+import { Logger } from '../../../../logger.service';
 
 @Component({
     selector: 'app-admin-dashboard',
@@ -40,6 +40,7 @@ export class AdminDashboardComponent implements OnInit {
     totalParticipants = 0;
     isQuizOwner: boolean = false;
     quizStarted: boolean = false;
+    quizSessionId: string | null = null;
 
     constructor(
         private quizService: QuizService,
@@ -48,7 +49,8 @@ export class AdminDashboardComponent implements OnInit {
         private route: ActivatedRoute,
         private snackBar: MatSnackBar,
         private authService: AuthService,
-        private logger: Logger  // Inject Logger service
+        private router: Router,  // Inject Router for navigation
+        private logger: Logger
     ) { }
 
     ngOnInit(): void {
@@ -57,6 +59,7 @@ export class AdminDashboardComponent implements OnInit {
             if (this.quizId) {
                 this.loadQuizDetails(this.quizId);
                 this.listenToCurrentQuestion(this.quizId);
+                this.listenForQuizEnd();  // Add listener for quiz end
             }
         });
     }
@@ -74,6 +77,7 @@ export class AdminDashboardComponent implements OnInit {
                 this.currentQuestionIndex = this.quizDetails.currentQuestion || 0;
                 this.updateQuestionStatuses();
                 this.timerValue = quizData.timer;
+                this.totalParticipants = quizData.participants.length;
 
                 if (this.quizStarted && this.currentQuestionIndex === 0) {
                     this.startTimerForCurrentQuestion();
@@ -109,6 +113,22 @@ export class AdminDashboardComponent implements OnInit {
                     method: 'listenToCurrentQuestion',
                     message: `Error listening to current question index: ${error.message}`,
                     timestamp: new Date().toISOString(),
+                });
+            }
+        });
+    }
+
+    listenForQuizEnd(): void {
+        // Monitor the endTime field to detect when the quiz ends
+        const instituteId = this.customizationService.getSubdomainFromUrl();
+        this.quizService.getQuizById(instituteId, this.quizId).subscribe(quiz => {
+            if (quiz.endTime) {
+                // Redirect to the report page when endTime is set
+                this.router.navigate(['/quiz/live-quiz/report'], {
+                    queryParams: {
+                        quizId: this.quizId,
+                        sessionId: quiz.date ? this.setQuizSessionId() : ''  // Use the quiz start time as session ID
+                    }
                 });
             }
         });
@@ -159,6 +179,14 @@ export class AdminDashboardComponent implements OnInit {
                 this.isQuizOwner = false;
                 this.currentQuestionIndex = 0;
                 this.updateQuestionStatuses();
+
+                // Redirect to the report page on end
+                this.router.navigate(['/quiz/live-quiz/report'], {
+                    queryParams: {
+                        quizId: this.quizId,
+                        sessionId: this.quizDetails.date ? this.setQuizSessionId() : ''
+                    }
+                });
             },
             error: (error) => {
                 console.error('Error ending quiz:', error);
@@ -172,6 +200,19 @@ export class AdminDashboardComponent implements OnInit {
                 this.snackBar.open('Failed to end quiz.', 'Close', { duration: 3000 });
             }
         });
+    }
+
+    setQuizSessionId(): void {
+        if (this.quizDetails?.date) {
+            const date = this.quizDetails.date.toDate(); // Assuming `date` is a Firestore Timestamp
+            this.quizSessionId = `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date
+                .getDate()
+                .toString()
+                .padStart(2, '0')}_${date.getHours()}${date
+                    .getMinutes()
+                    .toString()
+                    .padStart(2, '0')}`;
+        }
     }
 
     updateQuestionStatuses(): void {

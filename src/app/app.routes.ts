@@ -26,6 +26,7 @@ import { ViewQuizComponent } from './dashboard/quiz-module/live-quiz/view-list/v
 import { AdminDashboardComponent } from './dashboard/quiz-module/live-quiz/admin-dashboard/admin-dashboard.component';
 import { QuizModuleComponent } from './dashboard/quiz-module/quiz-module.component';
 import { ParticipantDashboardComponent } from './dashboard/quiz-module/live-quiz/participant-dashboard/participant-dashboard.component';
+import { ReportComponent } from './dashboard/quiz-module/live-quiz/report/report.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/home', pathMatch: 'full' },
@@ -51,6 +52,7 @@ export const routes: Routes = [
     { path: 'quiz/live-quiz/view-list', component: ViewQuizComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRoles: ['admin', 'student'], title: 'View Live Quiz' } },
     { path: 'quiz/live-quiz/admin-dashboard', component: AdminDashboardComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRoles: ['admin'], title: 'Admin Live Quiz Dashboard' } },
     { path: 'quiz/live-quiz/participant-dashboard', component: ParticipantDashboardComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRoles: ['admin', 'student'], title: 'Live Quiz' } },
+    { path: 'quiz/live-quiz/report', component: ReportComponent, canActivate: [AuthGuard, RoleGuard], data: { expectedRoles: ['admin', 'student'], title: 'Quiz Report' } },
 
     { path: '**', component: Error404Component, data: { title: '404 not found' } }
 ];
