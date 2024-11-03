@@ -70,13 +70,13 @@ export class AuthService {
                                 const userData = docSnap.data() as UserRole; // Cast to UserRole
                                 this.currentUserData = { ...user, role: userData.role, adminMessage: userData['adminMessage'] || null };
                                 this.userSubject.next(this.currentUserData);
-                                this.saveFCMToken(user);
+                                //this.saveFCMToken(user);
                                 return this.currentUserData;
                             } else {
                                 const userWithRole: UserWithRole = { ...user, role: 'user' };
                                 this.currentUserData = userWithRole;
                                 this.userSubject.next(this.currentUserData);
-                                this.saveFCMToken(user);
+                                //this.saveFCMToken(user);
                                 return userWithRole;
                             }
                         })
