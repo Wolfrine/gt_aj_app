@@ -15,7 +15,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatButtonModule } from '@angular/material/button';
 import { CustomizationService } from '../../../customization.service';
 import { Firestore, doc, getDoc } from '@angular/fire/firestore';
-import { Logger } from '../../../logger.service'; // Import Logger service
+import { Logger } from '../../../logger.service';
 
 @Component({
     selector: 'app-new-registration',
@@ -47,18 +47,18 @@ export class NewRegistrationComponent implements OnInit {
     private authService = inject(AuthService);
     private syllabusService = inject(SyllabusService);
     private customizationService = inject(CustomizationService);
-    private logger = inject(Logger);  // Inject Logger
+    private logger = inject(Logger);
 
     constructor() {
         this.registrationForm = this.fb.group({
             name: ['', Validators.required],
             email: ['', [Validators.required, Validators.email]],
-            phone: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],  // Ensure phone is 10 digits
+            phone: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
             institute: ['', Validators.required],
             role: ['', Validators.required],
-            board: [''],   // Single board selection
-            standard: [''],   // Single standard selection
-            subjects: [[]],   // Multiple subjects
+            board: [''],
+            standard: [''],
+            subjects: [[]],
             childEmail: ['', Validators.email]
         });
     }
@@ -66,7 +66,6 @@ export class NewRegistrationComponent implements OnInit {
     ngOnInit() {
         this.registrationForm.patchValue({ institute: this.customizationService.getSubdomainFromUrl() });
 
-        // Fetch logged-in user's name, email and pre-fill the form with registration details
         this.authService.user$.subscribe(async (user) => {
             if (user) {
                 this.registrationForm.patchValue({
@@ -74,7 +73,6 @@ export class NewRegistrationComponent implements OnInit {
                     email: user.email
                 });
 
-                // Fetch the user's existing registration details from Firestore
                 const userDocRef = doc(this.firestore, `institutes/${this.customizationService.getSubdomainFromUrl()}/users/${user.email}`);
 
                 // Log Firestore Read Operation
@@ -83,7 +81,7 @@ export class NewRegistrationComponent implements OnInit {
                     module: 'NewRegistrationComponent',
                     method: 'ngOnInit',
                     collection: `institutes/${this.customizationService.getSubdomainFromUrl()}/users/${user.email}`,
-                    dataSize: 0,  // Adjust this as per your data structure
+                    dataSize: 0,
                     timestamp: new Date().toISOString(),
                 });
 
@@ -100,13 +98,11 @@ export class NewRegistrationComponent implements OnInit {
                         childEmail: registrationData['childEmail'] || ''
                     });
 
-                    // Ensure validators are applied based on the role
                     this.setConditionalValidators(registrationData['role']);
                 }
             }
         });
 
-        // Fetch boards and standards on initialization
         this.syllabusService.getDistinctBoards().subscribe((boards) => {
             this.boards = boards;
         });
@@ -123,7 +119,6 @@ export class NewRegistrationComponent implements OnInit {
     fetchStandards(boardId: string) {
         this.syllabusService.getStandardsByBoard(boardId).subscribe((standards) => {
             this.standards = standards;
-            // Reset standard when board changes
             this.registrationForm.patchValue({ standard: '' });
         });
     }
@@ -131,7 +126,6 @@ export class NewRegistrationComponent implements OnInit {
     fetchSubjects(standardId: string) {
         this.syllabusService.getSubjectsByStandardAndBoard(standardId).subscribe((subjects) => {
             this.subjects = subjects;
-            // Reset subjects when standard changes
             this.registrationForm.patchValue({ subjects: [] });
         });
     }
@@ -153,7 +147,6 @@ export class NewRegistrationComponent implements OnInit {
             this.registrationForm.get('childEmail')?.setValidators([Validators.required, Validators.email]);
         }
 
-        // Update validation and form controls
         this.registrationForm.get('boards')?.updateValueAndValidity();
         this.registrationForm.get('standards')?.updateValueAndValidity();
         this.registrationForm.get('subjects')?.updateValueAndValidity();
@@ -191,6 +184,16 @@ export class NewRegistrationComponent implements OnInit {
 
     onSubmit() {
         if (this.registrationForm.valid) {
+            // Log registration submission
+            this.logger.addLog({
+                type: 'SUBMIT',
+                module: 'NewRegistrationComponent',
+                method: 'onSubmit',
+                collection: `institutes/${this.customizationService.getSubdomainFromUrl()}/users`,
+                dataSize: JSON.stringify(this.registrationForm.getRawValue()).length,
+                timestamp: new Date().toISOString(),
+            });
+
             this.registrationService.register(this.registrationForm.getRawValue()).then(
                 () => {
                     this.notificationService.showSuccess('Registration submitted successfully.');

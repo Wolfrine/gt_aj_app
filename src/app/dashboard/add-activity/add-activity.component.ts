@@ -2,15 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { SyllabusService } from '../../manage-syllabus/syllabus.service';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Firestore, doc, setDoc, collection, collectionData, query, where, orderBy, limit } from '@angular/fire/firestore';
 import { Observable, take } from 'rxjs';
-import { CustomizationService } from '../../customization.service'; // For getting subdomain from the URL
+import { CustomizationService } from '../../customization.service';
 import { AuthService } from '../../common/auth/auth.service';
-import { Logger } from '../../logger.service'; // Import Logger
+import { Logger } from '../../logger.service';
 
 @Component({
     selector: 'app-add-activity',
@@ -33,11 +32,9 @@ export class AddActivityComponent implements OnInit {
     standards: { id: string, name: string }[] = [];
     subjects: { id: string, name: string }[] = [];
     currentUserEmail: string | null = null;
-
     selectedBoard: string = '';
     selectedStandard: string = '';
     selectedSubject: string = '';
-
     activities: any[] = [];
     students: any[] | undefined;
     currentUserRole: string | undefined;
@@ -48,7 +45,7 @@ export class AddActivityComponent implements OnInit {
         private syllabusService: SyllabusService,
         private customizationService: CustomizationService,
         private authService: AuthService,
-        private logger: Logger  // Inject Logger
+        private logger: Logger
     ) {
         this.activityForm = this.fb.group({
             board: ['', Validators.required],
@@ -56,7 +53,7 @@ export class AddActivityComponent implements OnInit {
             subject: ['', Validators.required],
             activityType: ['', Validators.required],
             remarks: [''],
-            selectedStudent: [''] // Add the selectedStudent control here
+            selectedStudent: ['']
         });
     }
 
@@ -80,7 +77,7 @@ export class AddActivityComponent implements OnInit {
             });
         });
 
-        // Fetch the current user's email
+        // Fetch the current user's email and role
         this.authService.getCurrentUser().subscribe((user) => {
             if (user && user.email) {
                 this.currentUserEmail = user.email;
@@ -137,6 +134,7 @@ export class AddActivityComponent implements OnInit {
                 timestamp: new Date().toISOString(),
             });
 
+            // Refresh the activity list after submission
             this.getUserActivities().subscribe((activities) => {
                 this.activities = activities.map(activity => {
                     if (activity.created_at && activity.created_at.toDate) {
@@ -180,7 +178,6 @@ export class AddActivityComponent implements OnInit {
         let activitiesQuery;
 
         if (dateStr && userEmail) {
-            console.log('Filtering by user and date');
             const startOfDay = new Date(dateStr);
             const endOfDay = new Date(startOfDay);
             endOfDay.setHours(23, 59, 59, 999);
@@ -193,7 +190,6 @@ export class AddActivityComponent implements OnInit {
                 orderBy('created_at', 'desc')
             );
         } else if (dateStr) {
-            console.log('Filtering by date only');
             const startOfDay = new Date(dateStr);
             const endOfDay = new Date(startOfDay);
             endOfDay.setHours(23, 59, 59, 999);
@@ -205,7 +201,6 @@ export class AddActivityComponent implements OnInit {
                 orderBy('created_at', 'desc')
             );
         } else if (userEmail) {
-            console.log('Filtering by user only');
             activitiesQuery = query(
                 activitiesCollection,
                 where('created_by', '==', userEmail),
@@ -213,7 +208,6 @@ export class AddActivityComponent implements OnInit {
                 limit(50)
             );
         } else {
-            console.log('Fetching last 50 activities for all users');
             activitiesQuery = query(
                 activitiesCollection,
                 orderBy('created_at', 'desc'),
@@ -221,19 +215,32 @@ export class AddActivityComponent implements OnInit {
             );
         }
 
+        // Log Firestore Read Operation
+        this.logger.addLog({
+            type: 'READ',
+            module: 'AddActivityComponent',
+            method: 'fetchActivities',
+            collection: `institutes/${subdomain}/activity_list`,
+            dataSize: 0,
+            timestamp: new Date().toISOString(),
+        });
+
         collectionData(activitiesQuery).subscribe({
             next: (activities) => {
-                console.log('Activities fetched:', activities);
                 observer.next(activities);
             },
             error: (error) => {
                 console.error('Error fetching activities:', error);
+                this.logger.addLog({
+                    type: 'ERROR',
+                    module: 'AddActivityComponent',
+                    method: 'fetchActivities',
+                    message: `Error fetching activities: ${error.message}`,
+                    timestamp: new Date().toISOString(),
+                });
                 observer.error(error);
             },
-            complete: () => {
-                console.log('Activity fetching complete');
-                observer.complete();
-            }
+            complete: () => observer.complete()
         });
     }
 }

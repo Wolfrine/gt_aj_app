@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Firestore, collection, collectionData, addDoc, doc, setDoc, deleteDoc, query, where, getDocs, writeBatch, DocumentReference, updateDoc, Timestamp, getDoc, docData, arrayUnion } from '@angular/fire/firestore';
 import { Observable, from, of, combineLatest, forkJoin } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { map, switchMap, catchError } from 'rxjs/operators';
 import { SyllabusService } from '../../manage-syllabus/syllabus.service';
-import { Logger } from '../../logger.service';  // Import Logger service
+import { Logger } from '../../logger.service';
 import { CustomizationService } from '../../customization.service';
 
 @Injectable({
@@ -21,7 +21,6 @@ export class QuizService {
         const quizCollection = collection(this.firestore, 'quizbank');
         const q = query(quizCollection, where('chapterId', 'in', chapterIds));
 
-        // Log Firestore Read Operation
         this.logger.addLog({
             type: 'READ',
             module: 'QuizService',
@@ -35,7 +34,18 @@ export class QuizService {
             map(snapshot => snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
-            })))
+            }))),
+            catchError(error => {
+                console.error("Error fetching questions:", error);
+                this.logger.addLog({
+                    type: 'ERROR',
+                    module: 'QuizService',
+                    method: 'getQuestionsByChapter',
+                    message: `Error fetching questions: ${error.message}`,
+                    timestamp: new Date().toISOString(),
+                });
+                return of([]);
+            })
         );
     }
 
@@ -49,7 +59,19 @@ export class QuizService {
             dataSize: JSON.stringify(question).length,
             timestamp: new Date().toISOString(),
         });
-        return from(addDoc(quizCollection, question));
+        return from(addDoc(quizCollection, question)).pipe(
+            catchError(error => {
+                console.error("Error adding question:", error);
+                this.logger.addLog({
+                    type: 'ERROR',
+                    module: 'QuizService',
+                    method: 'addQuestion',
+                    message: `Error adding question: ${error.message}`,
+                    timestamp: new Date().toISOString(),
+                });
+                return of(null);
+            })
+        );
     }
 
     uploadQuestions(questions: any[]): Observable<any> {
@@ -70,12 +92,25 @@ export class QuizService {
             timestamp: new Date().toISOString(),
         });
 
-        return from(batch.commit());
+        return from(batch.commit()).pipe(
+            catchError(error => {
+                console.error("Error uploading questions:", error);
+                this.logger.addLog({
+                    type: 'ERROR',
+                    module: 'QuizService',
+                    method: 'uploadQuestions',
+                    message: `Error uploading questions: ${error.message}`,
+                    timestamp: new Date().toISOString(),
+                });
+                return of(null);
+            })
+        );
     }
 
     deleteQuestion(question: any): Observable<any> {
         const quizCollection = collection(this.firestore, 'quizbank');
         const q = query(quizCollection, where('question', '==', question.question));
+
         this.logger.addLog({
             type: 'DELETE',
             module: 'QuizService',
@@ -92,6 +127,17 @@ export class QuizService {
                     batch.delete(doc.ref);
                 });
                 return from(batch.commit());
+            }),
+            catchError(error => {
+                console.error("Error deleting question:", error);
+                this.logger.addLog({
+                    type: 'ERROR',
+                    module: 'QuizService',
+                    method: 'deleteQuestion',
+                    message: `Error deleting question: ${error.message}`,
+                    timestamp: new Date().toISOString(),
+                });
+                return of(null);
             })
         );
     }
@@ -109,21 +155,128 @@ export class QuizService {
         return of({ success: true });
     }
 
-    createLiveQuiz(quizData: any): Observable<DocumentReference<any>> {
+    createLiveQuiz(quizData: any): Observable<DocumentReference<any> | null> {
         const quizCollection = collection(this.firestore, `/institutes/${this.customizationService.getSubdomainFromUrl()}/quiz`);
         const liveQuizData = { ...quizData, quiz_type: 'live' };
-        return from(addDoc(quizCollection, liveQuizData));
+
+        this.logger.addLog({
+            type: 'WRITE',
+            module: 'QuizService',
+            method: 'createLiveQuiz',
+            collection: `institutes/${this.customizationService.getSubdomainFromUrl()}/quiz`,
+            dataSize: JSON.stringify(liveQuizData).length,
+            timestamp: new Date().toISOString(),
+        });
+
+        return from(addDoc(quizCollection, liveQuizData)).pipe(
+            catchError(error => {
+                console.error("Error creating live quiz:", error);
+                this.logger.addLog({
+                    type: 'ERROR',
+                    module: 'QuizService',
+                    method: 'createLiveQuiz',
+                    message: `Error creating live quiz: ${error.message}`,
+                    timestamp: new Date().toISOString(),
+                });
+                return of(null);
+            })
+        );
     }
 
-    updateQuiz(instituteId: string, quizId: string, updatedQuizData: any): Observable<void> {
+
+
+    updateQuiz(instituteId: string, quizId: string, updatedQuizData: any): Observable<void | null> {
         const quizDocRef = doc(this.firestore, `/institutes/${instituteId}/quiz/${quizId}`);
-        return from(updateDoc(quizDocRef, updatedQuizData));
+
+        this.logger.addLog({
+            type: 'UPDATE',
+            module: 'QuizService',
+            method: 'updateQuiz',
+            collection: `institutes/${instituteId}/quiz`,
+            dataSize: JSON.stringify(updatedQuizData).length,
+            timestamp: new Date().toISOString(),
+        });
+
+        return from(updateDoc(quizDocRef, updatedQuizData)).pipe(
+            catchError(error => {
+                console.error("Error updating quiz:", error);
+                this.logger.addLog({
+                    type: 'ERROR',
+                    module: 'QuizService',
+                    method: 'updateQuiz',
+                    message: `Error updating quiz: ${error.message}`,
+                    timestamp: new Date().toISOString(),
+                });
+                return of(null);
+            })
+        );
     }
 
-    deleteQuiz(instituteId: string, quizId: string): Observable<void> {
+    deleteQuiz(instituteId: string, quizId: string): Observable<void | null> {
         const quizDocRef = doc(this.firestore, `/institutes/${instituteId}/quiz/${quizId}`);
-        return from(deleteDoc(quizDocRef));
+
+        this.logger.addLog({
+            type: 'DELETE',
+            module: 'QuizService',
+            method: 'deleteQuiz',
+            collection: `institutes/${instituteId}/quiz`,
+            dataSize: 0,
+            timestamp: new Date().toISOString(),
+        });
+
+        return from(deleteDoc(quizDocRef)).pipe(
+            catchError(error => {
+                console.error("Error deleting quiz:", error);
+                this.logger.addLog({
+                    type: 'ERROR',
+                    module: 'QuizService',
+                    method: 'deleteQuiz',
+                    message: `Error deleting quiz: ${error.message}`,
+                    timestamp: new Date().toISOString(),
+                });
+                return of(null);
+            })
+        );
     }
+
+    addParticipant(instituteId: string, quizId: string, participantEmail: string): Observable<void | null> {
+        const quizDocRef = doc(this.firestore, `/institutes/${instituteId}/quiz/${quizId}`);
+
+        this.logger.addLog({
+            type: 'UPDATE',
+            module: 'QuizService',
+            method: 'addParticipant',
+            collection: `institutes/${instituteId}/quiz/${quizId}`,
+            dataSize: participantEmail.length,
+            timestamp: new Date().toISOString(),
+        });
+
+        return from(updateDoc(quizDocRef, {
+            participants: arrayUnion(participantEmail)
+        })).pipe(
+            catchError(error => {
+                console.error("Error adding participant:", error);
+                this.logger.addLog({
+                    type: 'ERROR',
+                    module: 'QuizService',
+                    method: 'addParticipant',
+                    message: `Error adding participant: ${error.message}`,
+                    timestamp: new Date().toISOString(),
+                });
+                return of(null);
+            })
+        );
+    }
+
+
+
+
+
+
+
+
+
+
 
     getAllQuizzes(instituteId: string): Observable<any[]> {
         const quizzesCollection = collection(this.firestore, `/institutes/${instituteId}/quiz`);
@@ -201,11 +354,6 @@ export class QuizService {
         });
     }
 
-    addParticipant(instituteId: string, quizId: string, participantEmail: string): Observable<void> {
-        const quizDocRef = doc(this.firestore, `/institutes/${instituteId}/quiz/${quizId}`);
-        return from(updateDoc(quizDocRef, {
-            participants: arrayUnion(participantEmail)  // Add user to participants array
-        }));
-    }
+
 
 }

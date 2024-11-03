@@ -6,21 +6,32 @@ import { debounceTime, Subject } from 'rxjs';
     providedIn: 'root'
 })
 export class Logger {
-    private logLength: number = 100;  // Default in case fetching fails
+    private logLength: number = 100;  // Default if fetching fails
     private logs: any[] = [];
-    private logSubject = new Subject<any>();  // Subject for debouncing logs
+    private logSubject = new Subject<any>();
+
+    // Toggle flag to enable/disable logging
+    private loggingEnabled: boolean = true;  // Set to false if you want logging off by default
 
     constructor(private firestore: Firestore) {
         this.fetchLogLengthFromFirestore();
 
         // Debounce the logs to avoid multiple rapid entries
         this.logSubject.pipe(debounceTime(500)).subscribe(() => {
-            this.pushLogsToFirestore();
+            if (this.loggingEnabled) {  // Only push logs if logging is enabled
+                this.pushLogsToFirestore();
+            }
         });
     }
 
-    // Fetch the log_length value from Firestore
+    // Method to toggle logging on or off
+    public setLoggingEnabled(enabled: boolean): void {
+        this.loggingEnabled = enabled;
+    }
+
+    // Fetch log length value from Firestore
     private async fetchLogLengthFromFirestore() {
+        if (!this.loggingEnabled) return;  // Skip fetching if logging is disabled
         const docRef = doc(this.firestore, 'global_variables', 'logging_settings');
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
@@ -30,22 +41,30 @@ export class Logger {
 
     // Log and get document from Firestore
     public async logAndGet(docRef: any, moduleName: string, collectionName: string, methodName: string) {
-        const docSnap = await getDoc(docRef);  // Perform the actual Firestore read
+        const result = await getDoc(docRef);  // Perform Firestore read
+        if (!this.loggingEnabled) {
+            return result;  // Skip logging if disabled
+        }
+
         const log = {
             type: 'READ',
             module: moduleName,
             method: methodName,
             collection: collectionName,
-            dataSize: docSnap.exists() ? JSON.stringify(docSnap.data()).length : 0,
+            dataSize: result.exists() ? JSON.stringify(result.data()).length : 0,
             timestamp: new Date().toISOString(),
         };
-        this.addLog(log);  // Add log to the list
-        return docSnap;
+        this.addLog(log);  // Add log to list
+        return result;
     }
 
     // Log and set document to Firestore
     public async logAndSet(docRef: any, data: any, moduleName: string, collectionName: string, methodName: string) {
-        await setDoc(docRef, data);  // Perform the actual Firestore write
+        await setDoc(docRef, data);  // Perform Firestore write
+        if (!this.loggingEnabled) {
+            return;  // Skip logging if disabled
+        }
+
         const log = {
             type: 'WRITE',
             module: moduleName,
@@ -54,20 +73,23 @@ export class Logger {
             dataSize: JSON.stringify(data).length,
             timestamp: new Date().toISOString(),
         };
-        this.addLog(log);  // Add log to the list
+        this.addLog(log);  // Add log to list
     }
 
-    // Add logs and store them in localStorage
+    // Add logs and store in localStorage
     public addLog(log: any) {
+        if (!this.loggingEnabled) {
+            return;  // Skip adding log if disabled
+        }
         this.logs.push(log);
 
-        // Store the logs in localStorage every time a new log is added
+        // Store logs in localStorage every time a new log is added
         this.logToLocalStorage();
 
-        // Check if the logs exceed the threshold in localStorage
+        // Check if logs exceed threshold
         const storedLogs = JSON.parse(localStorage.getItem('firestoreLogs') || '[]');
         if (storedLogs.length >= this.logLength) {
-            this.logSubject.next(null);  // Provide a dummy value to trigger log pushing
+            this.logSubject.next(null);  // Trigger log push
         }
     }
 
@@ -82,7 +104,7 @@ export class Logger {
     // Push logs to Firestore and clear localStorage
     private async pushLogsToFirestore() {
         const storedLogs = JSON.parse(localStorage.getItem('firestoreLogs') || '[]');
-        if (storedLogs.length === 0) return;  // If no logs to push, return early
+        if (storedLogs.length === 0) return;
 
         const logRef = doc(this.firestore, `logs/${new Date().toISOString()}`);
         await setDoc(logRef, { logs: storedLogs });
@@ -93,10 +115,12 @@ export class Logger {
 
     // Fetch and combine logs from Firestore
     public async fetchLogs(): Promise<any[]> {
+        if (!this.loggingEnabled) {
+            return [];  // Skip fetching if logging is disabled
+        }
+
         const logCollectionRef = collection(this.firestore, 'logs');
         const querySnapshot = await getDocs(logCollectionRef);
-
-        // Combine all logs into a single array
         let combinedLogs: any[] = [];
 
         querySnapshot.forEach((doc) => {
@@ -106,6 +130,6 @@ export class Logger {
             }
         });
 
-        return combinedLogs; // Return the combined array of logs
+        return combinedLogs;
     }
 }

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { inject } from '@angular/core';
-import { Firestore, collection, query, where, getDocs } from '@angular/fire/firestore';
+import { Firestore, collection, query, where, getDocs, QuerySnapshot, DocumentData } from '@angular/fire/firestore';
 import { AuthService } from '../auth/auth.service';
 import { CustomizationService } from '../../customization.service';
 import { Logger } from '../../logger.service';  // Import Logger service
@@ -30,11 +30,12 @@ export class RegisterComponent implements OnInit {
                     module: 'RegisterComponent',
                     method: 'ngOnInit',
                     collection: `institutes/${instituteName}/users`,
-                    dataSize: 0,  // Data size can be adjusted as per the document fetched
+                    dataSize: 0,  // Data size can be adjusted if needed
                     timestamp: new Date().toISOString(),
                 });
 
-                const querySnapshot = await getDocs(q);
+                // Perform Firestore read operation
+                const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(q);
 
                 if (!querySnapshot.empty) {
                     // User already registered

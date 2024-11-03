@@ -109,9 +109,13 @@ export class CreateLiveQuizComponent implements OnInit {
 
             this.quizService.createLiveQuiz(quizData).subscribe({
                 next: (docRef) => {
-                    alert(`Quiz created successfully! Quiz ID: ${docRef.id}`);
-                    this.createQuizForm.reset();
-                    this.selectedQuestions = [];  // Reset the selected questions
+                    if (docRef) {  // Check if docRef is not null
+                        alert(`Quiz created successfully! Quiz ID: ${docRef.id}`);
+                        this.createQuizForm.reset();
+                        this.selectedQuestions = [];  // Reset the selected questions
+                    } else {
+                        console.error('Quiz creation returned null DocumentReference');
+                    }
                 },
                 error: (err) => {
                     console.error('Error creating quiz:', err);

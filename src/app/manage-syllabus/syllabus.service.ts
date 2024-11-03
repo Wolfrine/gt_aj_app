@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Firestore, collection, collectionData, doc, getDoc, getDocs, writeBatch } from '@angular/fire/firestore';
 import { Observable, from, forkJoin, of, BehaviorSubject } from 'rxjs';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { map, switchMap, tap, catchError } from 'rxjs/operators';
 import { SyllabusNode } from './syllabus.interface';
 import { Logger } from '../logger.service';
 
@@ -13,7 +13,6 @@ export class SyllabusService {
 
     constructor(private firestore: Firestore, private logger: Logger) { }
 
-    // Ensure syllabus is loaded only once and cached
     loadCompleteSyllabus(): Observable<SyllabusNode[]> {
         if (this.syllabusCache.value) {
             return of(this.syllabusCache.value); // Return cached syllabus
@@ -21,7 +20,7 @@ export class SyllabusService {
 
         const syllabusMappingsCollection = collection(this.firestore, 'syllabus/syllabus-mapping/mappings');
 
-        // Log Firestore Read Operation
+        // Log Firestore Read Operation only if data is not cached
         this.logger.addLog({
             type: 'READ',
             module: 'SyllabusService',
@@ -47,54 +46,10 @@ export class SyllabusService {
                 });
 
                 return forkJoin({
-                    boards: from(getDocs(collection(this.firestore, 'syllabus/masters/boards'))).pipe(
-                        map((boardsSnapshot) => {
-                            const boardsMap: { [key: string]: string } = {};
-                            boardsSnapshot.forEach((doc) => {
-                                const data = doc.data();
-                                if (boardIds.has(doc.id)) {
-                                    boardsMap[doc.id] = data['name'];
-                                }
-                            });
-                            return boardsMap;
-                        })
-                    ),
-                    standards: from(getDocs(collection(this.firestore, 'syllabus/masters/standards'))).pipe(
-                        map((standardsSnapshot) => {
-                            const standardsMap: { [key: string]: string } = {};
-                            standardsSnapshot.forEach((doc) => {
-                                const data = doc.data();
-                                if (standardIds.has(doc.id)) {
-                                    standardsMap[doc.id] = data['name'];
-                                }
-                            });
-                            return standardsMap;
-                        })
-                    ),
-                    subjects: from(getDocs(collection(this.firestore, 'syllabus/masters/subjects'))).pipe(
-                        map((subjectsSnapshot) => {
-                            const subjectsMap: { [key: string]: string } = {};
-                            subjectsSnapshot.forEach((doc) => {
-                                const data = doc.data();
-                                if (subjectIds.has(doc.id)) {
-                                    subjectsMap[doc.id] = data['name'];
-                                }
-                            });
-                            return subjectsMap;
-                        })
-                    ),
-                    chapters: from(getDocs(collection(this.firestore, 'syllabus/masters/chapters'))).pipe(
-                        map((chaptersSnapshot) => {
-                            const chaptersMap: { [key: string]: string } = {};
-                            chaptersSnapshot.forEach((doc) => {
-                                const data = doc.data();
-                                if (chapterIds.has(doc.id)) {
-                                    chaptersMap[doc.id] = data['name'];
-                                }
-                            });
-                            return chaptersMap;
-                        })
-                    ),
+                    boards: this.getMasterData('boards', boardIds),
+                    standards: this.getMasterData('standards', standardIds),
+                    subjects: this.getMasterData('subjects', subjectIds),
+                    chapters: this.getMasterData('chapters', chapterIds),
                     syllabusSnapshot: of(syllabusSnapshot)
                 });
             }),
@@ -135,9 +90,48 @@ export class SyllabusService {
                 syllabusHierarchy.push(...Object.values(boardsMap));
                 this.syllabusCache.next(syllabusHierarchy);  // Cache the loaded syllabus
                 return syllabusHierarchy;
+            }),
+            catchError(error => {
+                console.error("Error loading syllabus:", error);
+                this.logger.addLog({
+                    type: 'ERROR',
+                    module: 'SyllabusService',
+                    method: 'loadCompleteSyllabus',
+                    message: `Error loading syllabus: ${error.message}`,
+                    timestamp: new Date().toISOString(),
+                });
+                return of([]); // Return empty array on error
             })
         );
     }
+
+    private getMasterData(collectionName: string, ids: Set<string>): Observable<{ [key: string]: string }> {
+        const masterCollection = collection(this.firestore, `syllabus/masters/${collectionName}`);
+        return from(getDocs(masterCollection)).pipe(
+            map(snapshot => {
+                const dataMap: { [key: string]: string } = {};
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (ids.has(doc.id)) {
+                        dataMap[doc.id] = data['name'];
+                    }
+                });
+                return dataMap;
+            }),
+            catchError(error => {
+                console.error(`Error loading ${collectionName}:`, error);
+                this.logger.addLog({
+                    type: 'ERROR',
+                    module: 'SyllabusService',
+                    method: `getMasterData(${collectionName})`,
+                    message: `Error loading ${collectionName}: ${error.message}`,
+                    timestamp: new Date().toISOString(),
+                });
+                return of({}); // Return empty object on error
+            })
+        );
+    }
+
 
     // Method to ensure syllabus is only loaded once when needed
     ensureSyllabusLoaded(): Observable<SyllabusNode[]> {

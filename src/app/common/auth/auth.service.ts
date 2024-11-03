@@ -3,13 +3,13 @@ import { Auth, signInWithPopup, GoogleAuthProvider, signOut, UserCredential, Use
 import { Firestore, doc, getDoc, DocumentData, collection, query, where, collectionData, setDoc } from '@angular/fire/firestore';
 import { authState } from 'rxfire/auth';
 import { Observable, of, from, BehaviorSubject } from 'rxjs';
-import { switchMap, map, take, tap } from 'rxjs/operators'; // Added `tap` to cache results
+import { switchMap, map, take, tap } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { CustomizationService } from '../../customization.service';
 import { AuthComponent } from './auth.component';
-import { NgZone } from '@angular/core'; // Import NgZone
-import { Logger } from '../../logger.service';  // Import Logger service
+import { NgZone } from '@angular/core';
+import { Logger } from '../../logger.service';
 import { MessagingService } from '../../messaging.service';
 
 export interface UserRole extends DocumentData {
@@ -33,9 +33,8 @@ export class AuthService {
     private userSubject = new BehaviorSubject<UserWithRole | null>(null);
     private loginNotificationShown = new BehaviorSubject<boolean>(false);
 
-    // Added caching for user data
-    private currentUserData: UserWithRole | null = null; // Cache for current user data
-    private authState$ = authState(this.auth).pipe(take(1));  // Cached authState observable
+    private currentUserData: UserWithRole | null = null;
+    private authState$ = authState(this.auth).pipe(take(1));
 
     redirectUrl: string | null = null;
 
@@ -46,24 +45,20 @@ export class AuthService {
         private customizationService: CustomizationService,
         private router: Router,
         private ngZone: NgZone,
-        private logger: Logger,  // Inject Logger service
+        private logger: Logger,
         private messagingService: MessagingService
     ) {
         this.user$ = this.userSubject.asObservable();
-        // Fetch user once on initialization
-        this.getAuthState().subscribe(); // Subscribe to getAuthState to fetch user data once
+        this.getAuthState().subscribe();
 
         this.authState$.subscribe((user) => {
             console.log('Auth State User:', user);
         });
     }
 
-
-
-    // This method caches the result of authState and reuses it across the application
     getAuthState(): Observable<UserWithRole | null> {
         if (this.currentUserData) {
-            return of(this.currentUserData);  // Return cached user data if available
+            return of(this.currentUserData);
         }
         return this.authState$.pipe(
             switchMap(user => {
@@ -72,7 +67,7 @@ export class AuthService {
                     return from(this.logger.logAndGet(userDocRef, 'AuthService', `institutes/${this.customizationService.getSubdomainFromUrl()}/users`, 'authState')).pipe(
                         map(docSnap => {
                             if (docSnap.exists()) {
-                                const userData = docSnap.data() as UserRole;
+                                const userData = docSnap.data() as UserRole; // Cast to UserRole
                                 this.currentUserData = { ...user, role: userData.role, adminMessage: userData['adminMessage'] || null };
                                 this.userSubject.next(this.currentUserData);
                                 this.saveFCMToken(user);
@@ -92,7 +87,7 @@ export class AuthService {
                 }
             }),
             tap(user => {
-                this.currentUserData = user; // Cache the user data
+                this.currentUserData = user;
             })
         );
     }
@@ -123,23 +118,18 @@ export class AuthService {
                 const userEmail = result.user.email;
                 if (userEmail) {
                     const userDocRef = doc(this.firestore, `institutes/${this.customizationService.getSubdomainFromUrl()}/users/${userEmail}`);
-                    getDoc(userDocRef).then((docSnap) => {
-                        if (docSnap.exists()) {
-                            const userData = docSnap.data() as UserRole;
 
-                            // Check if the user has 'accepted' status and a valid role
+                    // Log Firestore Read Operation
+                    this.logger.logAndGet(userDocRef, 'AuthService', 'institutes/${this.customizationService.getSubdomainFromUrl()}/users', 'googleSignIn').then((docSnap) => {
+                        if (docSnap.exists()) {
+                            const userData = docSnap.data() as UserRole; // Cast to UserRole
+
                             if (userData.status === 'accepted' && userData.role) {
                                 console.log('User is accepted and has a valid role. Redirecting to dashboard.');
-
-                                // Close all dialogs and navigate to dashboard
                                 this.dialog.closeAll();
                                 this.router.navigate(['/dashboard']).then(() => {
-                                    console.log('Redirected to dashboard');
-
-                                    // Check if the URL is still '/login' after the redirection
                                     if (this.router.url === '/login') {
-                                        console.warn('Still on /login after redirection, reloading page');
-                                        window.location.reload();  // Force reload if still on /login
+                                        window.location.reload();
                                     }
                                 });
                             } else {
@@ -154,20 +144,17 @@ export class AuthService {
                 }
             });
 
-            return result; // Return the UserCredential as expected
+            return result;
         }).catch(error => {
             console.error("Login failed:", error);
-            throw error; // Rethrow the error to maintain the return type of the function
+            throw error;
         });
     }
 
-
-
-
     signOut() {
-        this.userSubject.next(null);  // Clear cached role on sign out
-        this.currentUserData = null;  // Clear cached user data
-        this.loginNotificationShown.next(false);  // Reset the notification flag on sign out
+        this.userSubject.next(null);
+        this.currentUserData = null;
+        this.loginNotificationShown.next(false);
         this.router.navigate(['/login']);
         return signOut(this.auth);
     }
@@ -183,14 +170,12 @@ export class AuthService {
     handlePostLoginRedirect(): void {
         if (this.redirectUrl) {
             this.ngZone.run(() => {
-                console.log(`Redirecting to stored URL: ${this.redirectUrl}`);
-                this.router.navigate([this.redirectUrl]);  // Navigate to the previously stored URL
-                this.redirectUrl = null;  // Reset after navigating
+                this.router.navigate([this.redirectUrl]);
+                this.redirectUrl = null;
             });
         } else {
             this.ngZone.run(() => {
-                console.log('Redirecting to dashboard');
-                this.router.navigate(['/dashboard']);  // Default to dashboard
+                this.router.navigate(['/dashboard']);
             });
         }
     }
@@ -207,13 +192,12 @@ export class AuthService {
         const usersCollection = collection(this.firestore, `institutes/${subdomain}/users`);
         const studentsQuery = query(usersCollection, where('role', '==', 'student'));
 
-        // Log Firestore Query Operation
         this.logger.addLog({
             type: 'READ',
             module: 'AuthService',
             method: 'getStudents',
             collection: `institutes/${subdomain}/users`,
-            dataSize: 0,  // Adjust this if you want to calculate the actual size of data fetched
+            dataSize: 0,
             timestamp: new Date().toISOString(),
         });
 
@@ -225,31 +209,30 @@ export class AuthService {
         this.messagingService.getToken().then((token) => {
             if (token) {
                 const userRef = doc(this.firestore, `institutes/${this.customizationService.getSubdomainFromUrl()}/users/${user.email}`);
-                getDoc(userRef).then((docSnap) => {
+
+                // Log Firestore Read Operation
+                this.logger.logAndGet(userRef, 'AuthService', 'institutes/${this.customizationService.getSubdomainFromUrl()}/users', 'saveFCMToken').then((docSnap) => {
                     if (docSnap.exists()) {
-                        const userData = docSnap.data();
-                        let tokens = userData['fcmTokens'] || [];  // Retrieve the existing token array or initialize
-                        if (!tokens.includes(token)) {  // Add the token if it doesn't already exist
+                        const userData = docSnap.data() as UserRole; // Cast to UserRole
+                        let tokens = userData['fcmTokens'] || [];
+                        if (!tokens.includes(token)) {
                             tokens.push(token);
-                            setDoc(userRef, { fcmTokens: tokens }, { merge: true })
-                                .then(() => {
-                                    console.log('FCM Token added successfully.');
-                                })
-                                .catch((error) => {
-                                    console.error('Error saving FCM token: ', error);
-                                });
+
+                            // Log Firestore Write Operation
+                            this.logger.logAndSet(userRef, { fcmTokens: tokens }, 'AuthService', 'institutes/${this.customizationService.getSubdomainFromUrl()}/users', 'saveFCMToken').then(() => {
+                                console.log('FCM Token added successfully.');
+                            }).catch((error) => {
+                                console.error('Error saving FCM token: ', error);
+                            });
                         } else {
                             console.log('Token already exists.');
                         }
                     } else {
-                        // User document doesn't exist yet, create it with the token array
-                        setDoc(userRef, { fcmTokens: [token] }, { merge: true })
-                            .then(() => {
-                                console.log('FCM Token saved successfully in new user document.');
-                            })
-                            .catch((error) => {
-                                console.error('Error creating user document with FCM token: ', error);
-                            });
+                        this.logger.logAndSet(userRef, { fcmTokens: [token] }, 'AuthService', 'institutes/${this.customizationService.getSubdomainFromUrl()}/users', 'saveFCMToken').then(() => {
+                            console.log('FCM Token saved successfully in new user document.');
+                        }).catch((error) => {
+                            console.error('Error creating user document with FCM token: ', error);
+                        });
                     }
                 }).catch((error) => {
                     console.error('Error fetching user document: ', error);
