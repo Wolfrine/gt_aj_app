@@ -1,8 +1,44 @@
+.container-quiz {
+    padding: 8px;
+}
+
 .mat-mdc-card-title {
     display: flex;
     justify-content: space-between;
 }
 
-.container-quiz {
-    padding: 8px;
+ol {
+    padding-left: 0; // Remove left padding for ordered list
+}
+
+.option {
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-block;
+    width: 98%;
+    background-color: #f5f5f5;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+        background-color: #e0e0e0;
+    }
+
+    &.selected {
+        background-color: #1976d2; // Highlight color for selected option
+        color: #fff;
+    }
+
+    &.disabled {
+        background-color: #ddd; // Disabled background color
+        cursor: not-allowed;
+        color: #999;
+    }
+}
+
+li {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
 }

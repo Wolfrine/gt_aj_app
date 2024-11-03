@@ -13,12 +13,13 @@
         <mat-divider></mat-divider>
         <mat-card-content>
             <ol>
-                <li *ngFor="let option of currentQuestion.options; let i = index">
-                    <button mat-raised-button color="primary" (click)="handleAnswerSelection(i + 1)"
-                        [disabled]="answerSubmitted">
-                        {{ option }}
-                    </button>
-                </li>
+                <div *ngFor="let option of currentQuestion.options; let i = index" class="option"
+                    (click)="handleAnswerSelection(i + 1)" [ngClass]="{                         
+                         'disabled': answerSubmitted && selectedAnswer !== i + 1,
+                         'selected': selectedAnswer === i + 1
+                           }" [style.pointer-events]="answerSubmitted ? 'none' : 'auto'">
+                    <li>{{ (i+1) +". " +option }}</li>
+                </div>
             </ol>
         </mat-card-content>
     </mat-card>

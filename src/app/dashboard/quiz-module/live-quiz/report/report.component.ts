@@ -111,6 +111,7 @@ export class ReportComponent implements OnInit {
 
     calculateLeaderboard(): void {
         const participantScores: { [userId: string]: { correct: number; totalTime: number } } = {};
+        const questionTimerMs = this.quizDetails.timer * 1000; // Timer in milliseconds for internal calculations
 
         this.questionsWithResponses.forEach(question => {
             question.responses.forEach((response: any) => {
@@ -125,14 +126,29 @@ export class ReportComponent implements OnInit {
                 if (isCorrect) {
                     participantScores[userId].correct++;
                 }
-                participantScores[userId].totalTime += timeTaken;
+                participantScores[userId].totalTime += timeTaken; // Still in milliseconds
+            });
+
+            // Add full timer for unanswered questions
+            const answeredUserIds = question.responses.map((response: any) => response.userId);
+            this.participants.forEach((userId: string) => {
+                if (!answeredUserIds.includes(userId)) {
+                    if (!participantScores[userId]) {
+                        participantScores[userId] = { correct: 0, totalTime: 0 };
+                    }
+                    participantScores[userId].totalTime += questionTimerMs; // Add timer in ms
+                }
             });
         });
 
+        // Convert totalTime to seconds for display and sort leaderboard
         this.leaderboard = Object.keys(participantScores).map(userId => ({
             userId,
             correct: participantScores[userId].correct,
-            totalTime: participantScores[userId].totalTime
+            totalTime: Math.round(participantScores[userId].totalTime / 1000) // Convert ms to seconds for display
         })).sort((a, b) => b.correct - a.correct || a.totalTime - b.totalTime).slice(0, 5);
     }
+
+
+
 }

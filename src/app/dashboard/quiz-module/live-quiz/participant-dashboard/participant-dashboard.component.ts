@@ -8,26 +8,28 @@ import { QuizTimerComponent } from '../../../../common/components/quiz-timer/qui
 import { MatCardModule } from '@angular/material/card';
 import { MatDivider } from '@angular/material/divider';
 import { AuthService } from '../../../../common/auth/auth.service';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
     selector: 'app-participant-dashboard',
     standalone: true,
     templateUrl: './participant-dashboard.component.html',
     styleUrls: ['./participant-dashboard.component.scss'],
-    imports: [CommonModule, QuizTimerComponent, MatCardModule, MatDivider]
+    imports: [CommonModule, QuizTimerComponent, MatCardModule, MatDivider, MatButtonModule]
 })
 export class ParticipantDashboardComponent implements OnInit, OnDestroy {
     quizId: string | null = null;
     quizDetails: any;
     quizOwner: string | null = null;
     currentQuestion: any = null;
-    participantTimer: number = 30;
+    participantTimer: number = 10;
     message: string = 'The quiz will begin shortly.';
     waitingForNextQuestion: boolean = false;
     quizSessionId: string | null = null; // Updated to be a string based on quiz date and time
     questionStartTime: number = 0; // Timestamp when the question was displayed
-    answerSubmitted: boolean = false; // Flag to disable options after submission
+    answerSubmitted: boolean = true; // Flag to disable options after submission
     currentUserEmail: string | null = null;
+    selectedAnswer = 3;
 
     private quizSubscription: Subscription | null = null;
 
@@ -53,6 +55,16 @@ export class ParticipantDashboardComponent implements OnInit, OnDestroy {
                 this.listenForQuizEnd(); // Listen for quiz end
             }
         });
+
+        // this.currentQuestion = {
+        //     question: "Which of the following statements best describes the impact of the Industrial Revolution on global economies during the 18th and 19th centuries?",
+        //     options: [
+        //         "It led to a significant decrease in global trade as countries focused solely on local economies.",
+        //         "It resulted in the widespread replacement of agricultural economies with manufacturing-based economies, increasing urbanization and global trade.",
+        //         "It encouraged all nations to adopt a barter system, reducing the reliance on currency and financial institutions.",
+        //         "It brought about an immediate improvement in working conditions and wages for all laborers worldwide, reducing social inequality."
+        //     ]
+        // };
     }
 
     listenForQuizUpdates(): void {
@@ -115,11 +127,17 @@ export class ParticipantDashboardComponent implements OnInit, OnDestroy {
             this.waitingForNextQuestion = false;
             this.message = '';
             this.answerSubmitted = false; // Reset answer submission flag for new question
+            this.selectedAnswer = 0;
         }
     }
 
     handleAnswerSelection(selectedAnswer: number): void {
-        const timeTaken = Date.now() - this.questionStartTime; // Calculate time in milliseconds
+        this.selectedAnswer = selectedAnswer; // Assign the selected answer
+        if (this.answerSubmitted) return; // Prevent additional submissions
+
+        const timeTaken = Date.now() - this.questionStartTime; // Calculate time in milliseconds        
+
+        console.log('Selected answer:', this.selectedAnswer); // Verify that selection works
 
         // Prepare answer data for submission
         const answerData = {
@@ -137,6 +155,7 @@ export class ParticipantDashboardComponent implements OnInit, OnDestroy {
             this.answerSubmitted = true; // Disable options after submission
         });
     }
+
 
     handleTimerEnd(): void {
         this.waitingForNextQuestion = true;

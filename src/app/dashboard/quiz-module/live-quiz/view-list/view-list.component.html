@@ -98,7 +98,12 @@
                     <p><strong>Chapters:</strong> {{ quiz.chapters.join(', ') }}</p>
                     <p><strong>Total Questions:</strong> {{ quiz.questionIds ? quiz.questionIds.length : 0 }}</p>
                     <p><strong>Timer Between Questions:</strong> {{ quiz.timer }} seconds</p>
-                    <p><strong>Participants Registered:</strong> {{ quiz.participants }}</p>
+                    <p><strong>Participants Registered:</strong></p>
+                    <ul>
+                        <li *ngFor="let participant of quiz.participants">
+                            {{participant}}
+                        </li>
+                    </ul>
                     <p><strong>Date:</strong> {{quiz.date | date:'EEEE, MMMM d, y @ h:mm a' }} </p>
                     <p><strong>End Time:</strong> {{ quiz.endTime | date:'medium'}} </p>
                 </mat-card-content>
